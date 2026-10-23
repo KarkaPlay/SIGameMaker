@@ -282,8 +282,6 @@ dialog.studio-round-picker{width:402px}
 .studio-question-price-button[aria-expanded="true"]{color:#315cdb;border-color:#8ca9dc;background:#e2ecfc}
 
 /* Cat options stay compact beside the single question board. */
-.studio-cat-summary{grid-column:1/-1;display:flex;align-items:center;gap:12px;min-width:0;font-size:14px;color:#62748c}
-.studio-cat-summary span{flex:1;min-width:0;overflow-wrap:anywhere}.studio-cat-summary button{flex-shrink:0}
 .studio-question-cell.studio-question-cat{padding-top:20px;padding-bottom:8px;border-color:#acb9ee99}
 .studio-question-cat:not([aria-current]){background:#acb9ee14}.studio-question-cat .studio-question-kind{color:#bfcaf6;font-size:14px}
 .studio-question-cat[aria-current] .studio-question-kind{color:#5468ad}
@@ -318,3 +316,17 @@ dialog.studio-round-picker{width:402px}
 .studio-cat-editor [data-cat-prices]{overflow:hidden}
 
 .studio-current-type [data-action="cat-settings"]{width:120px;max-width:100%;padding:8px 4px;font-size:14px}
+
+/* One aligned type block: controls on the left, rules and values on the right. */
+.studio-question-type{display:block;margin-bottom:22px;padding-bottom:20px}
+.studio-type-label{margin:0 0 12px;font-size:14px;line-height:1.4;font-weight:600;color:#435976}
+.studio-type-layout{display:grid;grid-template-columns:120px minmax(0,1fr);gap:20px;align-items:start}
+.studio-type-layout .studio-current-type{min-width:0;gap:8px}
+.studio-question-type .studio-type-trigger{width:120px;height:120px;padding:12px 8px;gap:10px}
+.studio-current-type [data-action="cat-settings"]{min-height:36px;line-height:1.35;border-radius:9px}
+.studio-type-details{min-width:0;align-self:center}
+.studio-type-details #question-type-help{font-size:14px;line-height:1.55;color:#62748c;margin:0}
+.studio-cat-summary{display:grid;gap:7px;margin:12px 0 0;padding-top:12px;border-top:1px solid #e8edf4;font-size:14px;line-height:1.45}
+.studio-cat-summary>div{display:grid;grid-template-columns:76px minmax(0,1fr);gap:10px;align-items:baseline}
+.studio-cat-summary dt{color:#8390a3;font-weight:400}
+.studio-cat-summary dd{margin:0;min-width:0;color:#435976;overflow-wrap:anywhere}
