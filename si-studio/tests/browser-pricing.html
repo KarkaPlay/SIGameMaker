@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>Проверка множителей</title><h1>Множители и SIQ</h1><pre id="result">Проверяем…</pre><script type="module">
+import {defaultSetup,buildPack} from '../dist/setup.js?pricing-check=2';
+import {newQuestionPrice,newRoundTheme,newRound} from '../dist/pricing.js';
+import {exportSIQ,importSIQ} from '../dist/siq.js?pricing-check=2';
+import {zipSync,unzipSync,strToU8} from '../dist/vendor/fflate.js';
+const check=(ok,message)=>{if(!ok)throw Error(message);};
+try{
+ const c=defaultSetup();c.name='Множители';c.basePrice=50;c.priceStep=25;c.questions=3;
+ const p=buildPack(c);p.rounds[1].priceMultiplier=4;
+ for(const r of p.rounds)for(const t of r.themes)for(const q of t.questions){q.steps[0].value='Вопрос';q.answer='Ответ';}
+ const bytes=await exportSIQ(p,new Map()),copy=importSIQ(bytes).pack,r=copy.rounds[1];
+ check(copy.pricing.basePrice===50&&copy.pricing.priceStep===25&&copy.pricing.questions===3&&copy.pricing.multiplyPrices===true,'Настройки конструктора');
+ check(r.priceMultiplier===4&&copy.rounds[0].priceMultiplier===null,'Автоматический/ручной множитель');
+ check(r.themes[0].questions.map(q=>q.price).join(',')==='100,150,200','Существующие цены изменены');
+ check(newQuestionPrice(copy,r,3)===500,'Стоимость нового вопроса');
+ check(newRoundTheme(copy,r).questions.map(q=>q.price).join(',')==='200,300,400','Новая тема');
+ const final=copy.rounds.at(-1);check(final.type==='final'&&newQuestionPrice(copy,final,0)===0,'Правила финала');
+ const files=unzipSync(bytes);files['SIGameMaker.json']=strToU8('{broken');const broken=importSIQ(zipSync(files)).pack;check(broken.rounds.length===3&&!broken.pricing,'Повреждённые настройки должны игнорироваться');
+ delete files['SIGameMaker.json'];const legacy=importSIQ(zipSync(files)).pack;check(legacy.rounds.length===3&&newRound(legacy,'standard').themes[0].questions[0].price===400,'Открытие без метаданных');
+ document.querySelector('#result').textContent='PASS: native SIQ roundtrip preserves setup price scale, auto/manual multipliers and existing prices; new questions/themes, final, corrupted/missing optional metadata.';
+}catch(e){document.querySelector('#result').textContent='FAIL: '+e.stack;}
+</script>

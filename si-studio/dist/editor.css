@@ -91,3 +91,56 @@ dialog.studio-settings-popover::backdrop{background:transparent;backdrop-filter:
 .studio-settings-popover .dialog-footer{gap:8px;margin-top:4px;justify-content:space-between}
 .studio-settings-popover .dialog-footer .primary{margin-left:auto}
 .studio-settings-popover .dialog-footer button{padding:9px 12px;font-size:14px}
+
+/* A final round is a list of themes, each with one question and no fixed price. */
+.studio-final-board{width:100%;min-width:0}
+.studio-final-theme{display:flex;gap:10px;align-items:center;min-width:0}
+.studio-final-questions{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.studio-final-question{align-items:flex-start;flex-direction:column;justify-content:center;gap:5px;text-align:left;min-width:0;min-height:70px;padding:12px 16px;width:100%}
+.studio-final-question>span{font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.studio-final-question>small{font-size:14px;font-weight:400;line-height:1.4;opacity:.8}
+.studio-final-theme-edit{width:28px;height:32px;align-self:center;display:grid;place-items:center;border-radius:6px}
+.studio-final-theme-edit svg{width:18px;height:18px}
+.studio-final-board .studio-add-theme{width:100%;height:auto;min-height:42px;font-size:14px}
+.studio-final-rules{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #e4eaf2;color:#62748c;font-size:14px;line-height:1.5}
+.studio-final-rules strong{color:#435976;font-weight:600}.studio-final-rules p{margin-top:6px}.studio-final-rules button{margin-top:10px}
+
+/* Choose the round rules before creating any draft content. */
+dialog.studio-round-picker{width:402px}
+.studio-round-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.studio-round-choice{aspect-ratio:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:10px 6px;border:1px solid #dfe6f1;border-radius:10px;background:#f7f9fe;color:#435e87;font-size:14px;line-height:1.3;text-align:center}
+.studio-round-choice-symbol{font-size:26px;line-height:1;color:#6286c5}
+.studio-round-choice:hover:not(:disabled){background:#edf3ff;border-color:#a7bdec;box-shadow:0 3px 10px #315cdb12}
+.studio-round-choice:disabled{opacity:1;background:#f8f9fb;border-color:#edf0f4;color:#929daa;cursor:not-allowed}
+.studio-round-choice:disabled .studio-round-choice-symbol{color:#b0bac7}
+.studio-round-choice small{font-size:14px;color:#929daa}
+@media(prefers-reduced-motion:no-preference){.studio-round-choice{transition:background-color .16s ease,border-color .16s ease,box-shadow .16s ease}.studio-round-choice:active:not(:disabled){transform:scale(.97)}}
+
+.studio-round-choice[aria-pressed="true"]{background:#eaf1ff;border-color:#8da9e6;color:#315c9b;box-shadow:inset 0 0 0 1px #8da9e6}
+.studio-round-type-field{display:flex;flex-direction:column;gap:8px;font-size:14px;color:#687e9d}
+.studio-multiplier{display:flex;flex-direction:column;gap:10px;border:0;padding:0;margin:0;min-width:0}
+.studio-multiplier[hidden]{display:none}
+.studio-multiplier .studio-auto-multiplier{flex-direction:row;align-items:center;gap:8px;line-height:1.4}
+.studio-auto-multiplier input{margin:0;width:16px;height:16px;accent-color:#315cdb}
+.studio-multiplier p{font-size:14px;line-height:1.5;color:#8190a5}
+.studio-question-type{grid-template-columns:120px minmax(0,1fr);align-items:center}
+.studio-current-type{display:flex;flex-direction:column;gap:9px;font-size:14px;color:#435976}
+.studio-question-type .studio-type-trigger{width:110px;height:110px;font-size:14px}
+.studio-question-type p{grid-column:auto;margin:0;font-size:14px;line-height:1.6}
+.studio-settings-popover #settings-form[data-type="round"]{display:flex;flex-direction:column;gap:14px}
+.studio-settings-popover #settings-form[data-type="round"] label{margin:0}
+.studio-settings-popover .settings-form .studio-auto-multiplier{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:8px;margin:0}
+.studio-settings-popover .settings-form .studio-auto-multiplier input{width:16px;height:16px;flex:0 0 16px;padding:0;margin:0}
+.studio-round-choice-symbol svg{display:block;width:26px;height:26px}
+
+/* Neutral initial focus; keyboard focus on controls remains visible after Tab. */
+.dialog-heading #dialog-title:focus{outline:none}
+.studio-settings-popover[data-closing]{pointer-events:none}
+.studio-settings-popover .settings-form .studio-manual-multiplier[hidden]{display:none}
+/* The auction mark is separate from the completion dot and does not replace the price. */
+.studio-question-cell.studio-question-auction{padding-top:20px;padding-bottom:8px;border-style:solid;border-color:#d4ad6b99}
+.studio-question-auction:not([aria-current]){background:#d4ad6b14}
+.studio-question-kind{position:absolute;top:3px;left:50%;transform:translateX(-50%);display:grid;place-items:center;width:14px;height:14px;color:#f1d39d;pointer-events:none}
+.studio-question-kind svg{width:14px;height:14px}
+.studio-question-cell[aria-current] .studio-question-kind{color:#966b28}
+.studio-question-auction>i{bottom:4px;right:4px}

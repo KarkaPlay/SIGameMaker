@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>Проверка финального раунда</title><h1>Финальный раунд: SIQ</h1><pre id="result">Проверяем…</pre><script type="module">
+import {initial,question,step,issues} from '../dist/model.js';
+import {contentXML,exportSIQ,importSIQ} from '../dist/siq.js';
+import {zipSync,unzipSync,strToU8} from '../dist/vendor/fflate.js';
+const check=(ok,message)=>{if(!ok)throw Error(message);};
+const archive=xml=>zipSync({'content.xml':strToU8(xml)});
+try{
+ const p=initial(),media=new Map(),q=question(700,'Финальный <вопрос>','Ответ');q.steps[1].duration=17;q.comment='Ведущему';q.alternatives='Вариант';
+ for(const type of ['image','audio','video'])for(const reveal of [false,true]){const s=step(type);s.mediaId=crypto.randomUUID();s.filename='финал.'+({image:'png',audio:'wav',video:'webm'})[type];s.duration=4;s.wait=false;media.set(s.mediaId,new Blob([type+reveal]));if(reveal)q.steps.push(s);else q.steps.splice(q.steps.findIndex(st=>st.type==='answer'),0,s);}
+ p.rounds.push({id:crypto.randomUUID(),name:'Финал',type:'final',themes:[{id:crypto.randomUUID(),name:'Последняя тема',questions:[q]}]});
+ const files=unzipSync(await exportSIQ(p,media));const xml=contentXML(p),doc=new DOMParser().parseFromString(xml,'application/xml');check(doc.querySelector('round[type="final"] question').hasAttribute('type')===false,'Финал не наследует правила раунда');
+ for(const type of ['','stakeAll','simple']){const source=xml.replace('price="0"',`price="0" type="${type}"`),copy=importSIQ(zipSync({...files,'content.xml':strToU8(source)})),rq=copy.pack.rounds[1].themes[0].questions[0];check(rq.type==='simple'&&rq.price===0,'Импорт финала');check(rq.answer===q.answer&&rq.alternatives===q.alternatives&&rq.comment===q.comment,'Ответы/заметки');check(rq.steps.find(s=>s.type==='answer').duration===17,'Таймер');check(rq.steps.map(s=>s.type).join(',')==='text,image,audio,video,answer,image,audio,video','Порядок');for(const [i,s]of rq.steps.entries())if(s.mediaId){check(await copy.media.get(s.mediaId).text()===s.type+(i>4),'Байты медиа');check(s.duration===4&&s.wait===false,'Параметры медиа');}check(issues(copy.pack,copy.media).length===0,'Валидация');}
+ const roundtrip=importSIQ(await exportSIQ(p,media));check(roundtrip.pack.rounds[0].themes[0].questions.length===5,'Обычный раунд изменён');
+ const legacy=`<package version="4" name="Финал"><rounds><round name="Финал" type="final"><themes><theme name="Тема"><questions><question price="0"><scenario><atom>Вопрос</atom></scenario><right><answer>Ответ</answer></right></question></questions></theme></themes></round></rounds></package>`;
+ check(contentXML(importSIQ(archive(legacy)).pack).includes('<question price="0">'),'SIQ 4 финал');
+ document.querySelector('#result').textContent='PASS: final SIQ 4/5, empty/stakeAll/simple imports, round rules inherited, question/answer/metadata/timer, all six media bytes/order/durations/wait, ordinary round preserved.';
+}catch(e){document.querySelector('#result').textContent='FAIL: '+e.stack;}
+</script>

@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {writeFileSync,mkdtempSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {question,canAddQuestion,finalRoundError,issues,initial} from '../dist/model.js';
+import {defaultSetup,buildPack} from '../dist/setup.js';
+import {contentXML} from '../dist/siq.js';
+const fixture=()=>{const c=defaultSetup();c.name='Финал';const p=buildPack(c);for(const r of p.rounds)for(const t of r.themes)for(const q of t.questions){q.steps[0].value='Вопрос';q.answer='Ответ';}return p;};
+test('final allows several themes with exactly one question; a second question is blocked',()=>{const p=fixture(),r=p.rounds.at(-1),t=r.themes[0];assert.equal(r.themes.length,7);assert.equal(finalRoundError(r),'');assert.equal(canAddQuestion(r,t),false);assert.equal(canAddQuestion(r,{questions:[]}),true);assert.equal(canAddQuestion(p.rounds[0],t),true);t.questions.push(question());assert.match(finalRoundError(r),/ровно один/);assert.ok(issues(p).some(x=>x.message.includes('ровно один')));assert.throws(()=>contentXML(p),/ровно один/);});
+test('final export inherits stakeAll rules through the omitted type, keeping ordinary rounds and source data intact',()=>{const p=fixture(),r=p.rounds.at(-1),q=r.themes[0].questions[0];q.price=700;q.steps[1].duration=19;const before=structuredClone(p),xml=contentXML(p);const final=xml.match(/<round name="Финал" type="final">(.*?)<\/round>/s)[1];assert.equal([...final.matchAll(/<question price="0">/g)].length,7);assert.doesNotMatch(final,/type="simple"|type="stake"/);assert.match(final,/<param name="answerDuration">19<\/param>/);assert.match(xml,/<question price="100" type="simple">/);assert.deepEqual(p,before);const dir=mkdtempSync(join(tmpdir(),'si-final-'));writeFileSync(join(dir,'final.xml'),xml);execFileSync('xmllint',['--noout','--schema','docs/siq_5.xsd',join(dir,'final.xml')]);});
+test('unsafe conversion and final auctions are rejected without trimming question content',()=>{const p=initial(),r=p.rounds[0],before=structuredClone(r);assert.match(finalRoundError(r),/ровно один/);assert.deepEqual(r,before);const final=fixture();final.rounds.at(-1).themes[0].questions[0].type='stake';assert.match(finalRoundError(final.rounds.at(-1)),/скрытые ставки/);assert.ok(issues(final).some(x=>x.message.includes('без аукциона')));assert.throws(()=>contentXML(final),/скрытые ставки/);});
