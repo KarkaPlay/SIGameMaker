@@ -74,3 +74,20 @@
 @media(prefers-reduced-motion:reduce){.at-editor *{scroll-behavior:auto!important}}
 
 .studio-question-type{display:grid;grid-template-columns:auto minmax(180px,240px);align-items:center;gap:10px 18px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #e4eaf2}.studio-question-type label{font-size:14px;font-weight:600;color:#435976}.studio-question-type select{width:100%;min-height:40px;font:inherit;font-size:14px;background:#fff;border:1px solid #cbd6e5;border-radius:9px;padding:8px 12px;color:#344c70}.studio-question-type p{grid-column:1/-1;margin:0;font-size:14px;line-height:1.5;color:#62748c}
+.studio-coming-soon:disabled{opacity:.72;cursor:not-allowed;color:#8796aa;background:#f7f9fc;border-color:#e5eaf1}
+
+/* Compact settings are anchored to their button; the workspace stays visually clear. */
+dialog.studio-settings-popover{position:fixed;inset:auto;margin:0;width:320px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:18px;border:1px solid #e2e7ef;border-radius:12px;background:#fff;box-shadow:0 8px 24px #2035551a,0 24px 64px #20355514;overscroll-behavior:contain}
+dialog.studio-settings-popover::backdrop{background:transparent;backdrop-filter:none}
+.studio-settings-popover:has([data-type="pack"]){width:360px}
+.studio-settings-popover:has([data-type="question"]){width:280px}
+.studio-settings-popover .dialog-heading{gap:12px;margin-bottom:16px}
+.studio-settings-popover .dialog-heading h2{font-size:16px;letter-spacing:-.2px}
+.studio-settings-popover .dialog-heading .icon-button{flex-shrink:0;width:28px;height:28px}
+.studio-settings-popover .settings-form{gap:14px}
+.studio-settings-popover .settings-form label{font-size:14px;gap:7px}
+.studio-settings-popover input,.studio-settings-popover select,.studio-settings-popover textarea{padding:9px 10px;font-size:14px}
+.studio-settings-popover textarea{min-height:76px;max-height:180px}
+.studio-settings-popover .dialog-footer{gap:8px;margin-top:4px;justify-content:space-between}
+.studio-settings-popover .dialog-footer .primary{margin-left:auto}
+.studio-settings-popover .dialog-footer button{padding:9px 12px;font-size:14px}
