@@ -9,10 +9,26 @@ finish() {
   local status=$?
   if [ "$status" -ne 0 ]; then
     printf '\nСборка не завершена. Причина указана выше.\n'
-  fi
-  if [ -t 0 ]; then
     printf '\nНажмите Enter, чтобы закрыть это окно…'
     read -r _ || true
+  elif [ -t 1 ]; then
+    # Let this shell exit first, then close only the Terminal window hosting it.
+    /usr/bin/osascript - "$(tty)" >/dev/null 2>&1 <<'APPLESCRIPT' &
+on run argv
+  set targetTTY to item 1 of argv
+  delay 1
+  tell application "Terminal"
+    repeat with terminalWindow in windows
+      repeat with terminalTab in tabs of terminalWindow
+        if (tty of terminalTab) is targetTTY then
+          close terminalWindow
+          return
+        end if
+      end repeat
+    end repeat
+  end tell
+end run
+APPLESCRIPT
   fi
 }
 trap finish EXIT
@@ -26,8 +42,3 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 
 node "$PROJECT_DIR/build-cloudflare.mjs"
-
-# Open Finder only during an interactive launch (including double-click).
-if [ -t 1 ]; then
-  /usr/bin/open "$PROJECT_DIR/cloudflare-upload"
-fi
