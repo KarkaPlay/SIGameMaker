@@ -70,13 +70,13 @@ function render(){const motionBefore=captureEditorMotion();document.body.classLi
 function dialog(title,body,foot='',anchor=null){stopPreviewTimer();const d=$('#dialog');if(d.open&&d.classList.contains('studio-settings-popover'))closeDialog(true);clearSettingsAnchor();d.className=anchor?'studio-settings-popover':'';d.innerHTML=`<div class="dialog-heading"><h2 id="dialog-title" tabindex="-1" autofocus>${title}</h2>${btn('close-dialog','×','icon-button','aria-label="Закрыть"')}</div>${body}${foot?`<div class="dialog-footer">${foot}</div>`:''}`;d.setAttribute('aria-labelledby','dialog-title');if(!d.open)d.showModal();d.querySelector('#dialog-title').focus({preventScroll:true});if(anchor)anchorSettings(d,anchor);}
 function closeDialog(immediate=false){const d=$('#dialog');return panelMotion.close(d,{immediate:immediate||!d.classList.contains('studio-settings-popover')});}
 // Settings keep their focus/keyboard behavior while opening beside their trigger.
-let settingsAnchor=null,settingsObserver=null;
+let settingsAnchor=null,settingsObserver=null,settingsPreferredSide=null;
 function settingsButton(type,id){
  const buttons=[...document.querySelectorAll(`[data-action="${type}-settings"]`)];
  return buttons.find(b=>b.dataset.id===id)||buttons[0]||$('.studio-header-actions [data-action="pack-settings"]');
 }
 function clearSettingsAnchor(){
- settingsObserver?.disconnect();settingsObserver=null;
+ settingsObserver?.disconnect();settingsObserver=null;settingsPreferredSide=null;
  settingsAnchor?.removeAttribute('aria-expanded');settingsAnchor=null;
  const d=$('#dialog');d.style.removeProperty('left');d.style.removeProperty('top');d.style.removeProperty('transform-origin');
 }
@@ -86,7 +86,8 @@ function positionSettings(){
  const width=d.offsetWidth,height=d.offsetHeight;
  const left=Math.max(edge,Math.min(rect.left,innerWidth-width-edge));
  const below=innerHeight-rect.bottom-gap-edge,above=rect.top-gap-edge;
- const opensAbove=height>below&&above>below;
+ settingsPreferredSide??=height>below&&above>below?'above':'below';
+ const opensAbove=settingsPreferredSide==='above';
  const top=Math.max(edge,Math.min(opensAbove?rect.top-gap-height:rect.bottom+gap,innerHeight-height-edge));
  d.style.left=`${left}px`;d.style.top=`${top}px`;
  d.style.transformOrigin=`${Math.max(16,Math.min(rect.left+rect.width/2-left,width-16))}px ${opensAbove?'bottom':'top'}`;
@@ -97,7 +98,7 @@ function anchorSettings(d,anchor){
  positionSettings();settingsObserver=new ResizeObserver(positionSettings);settingsObserver.observe(d);
  panelMotion.open(d);
 }
-window.addEventListener('resize',positionSettings);
+window.addEventListener('resize',()=>{settingsPreferredSide=null;positionSettings();});
 document.addEventListener('scroll',positionSettings,true);
 function roundChoices(action,current){return `<div class="studio-round-choices">${[['standard','Обычный раунд','▦'],['final','Финальный раунд','⚑'],['interlude','Интерлюдия','♪']].map(([type,label,symbol])=>btn(action,`<span class="studio-round-choice-symbol" aria-hidden="true">${symbol}</span><span>${label}</span>${type==='interlude'?'<small>Скоро</small>':''}`,'studio-round-choice',`data-type="${type}" ${type==='interlude'?'disabled aria-disabled="true"':current?`aria-pressed="${current===type}"`:''} aria-label="${label}${type==='interlude'?' — скоро':''}"`)).join('')}</div>`;}
 function roundPicker(anchor){
@@ -109,7 +110,8 @@ function createEditorRound(type){
  snapshot();const closing=closeDialog();pack.rounds.push(r);select(r,r.themes[0],r.themes[0].questions[0]);changed();
  const tab=$(`.studio-round-item[data-round-id="${r.id}"] .studio-round-tab`);tab?.scrollIntoView({block:'nearest',inline:'nearest'});closing.then(()=>{if(tab?.isConnected)tab.focus({preventScroll:true});});
 }
-function multiplierFields(r){const automatic=!validMultiplier(r.priceMultiplier),index=Math.max(1,pack.rounds.indexOf(r)+1);return `<fieldset class="studio-multiplier" ${r.type==='final'?'hidden disabled':''}><label class="studio-manual-multiplier" ${automatic?'hidden':''}>Множитель очков<input name="priceMultiplier" type="number" min="1" step="1" value="${roundMultiplier(pack,r)}" ${automatic?'disabled':''} required></label><label class="studio-auto-multiplier"><input name="autoMultiplier" type="checkbox" ${automatic?'checked':''} data-auto-value="${index}"> По номеру раунда (×${index})</label><p>Для новых тем и вопросов. Существующие цены не меняются.</p></fieldset>`;}
+function multiplierFields(r){const automatic=!validMultiplier(r.priceMultiplier),index=Math.max(1,pack.rounds.indexOf(r)+1);return `<fieldset class="studio-multiplier" ${r.type==='final'?'hidden disabled':''}><label class="studio-auto-multiplier"><input name="autoMultiplier" type="checkbox" ${automatic?'checked':''} data-auto-value="${index}"> По номеру раунда (×${index})</label><div class="studio-multiplier-reveal ${automatic?'':'is-open'}" aria-hidden="${automatic}" ${automatic?'inert':''}><div class="studio-multiplier-reveal-clip"><label class="studio-manual-multiplier">Множитель очков<input name="priceMultiplier" type="number" min="1" step="1" value="${roundMultiplier(pack,r)}" ${automatic?'disabled':''} required></label></div></div><p>Для новых тем и вопросов. Существующие цены не меняются.</p></fieldset>`;}
+
 function settingsTarget(type,id,ownerRoundId){
  if(type==='pack')return pack.id===id?pack:null;
  if(type==='round')return pack.rounds.find(r=>r.id===id);
@@ -192,7 +194,7 @@ function syncQuestionState(){const q=activeQuestion();if(!q)return;for(const st 
 document.addEventListener('toggle',ev=>{const detail=ev.target;if(!detail.matches?.('.studio-step')||!detail.open||!detail.isConnected)return;stepFocus=detail.dataset.step;document.querySelectorAll('.studio-step[open]').forEach(other=>{if(other!==detail)other.open=false;});},true);
 document.addEventListener('focusin',ev=>{if(ev.target.matches('[data-field],[data-step-field]'))focused=false;});
 document.addEventListener('input',ev=>{const el=ev.target,q=activeQuestion();if(!q||!el.matches('[data-field],[data-step-field]'))return;if(!focused){snapshot();focused=true;}if(el.dataset.field)q[el.dataset.field]=el.value;else{const s=q.steps.find(s=>s.id===el.dataset.id);s[el.dataset.stepField]=el.type==='checkbox'?el.checked:el.type==='range'?Math.max(1,Math.min(60,Math.round(Number(el.value)||1))):el.value;}if(el.dataset.stepField==='duration'){const out=$(`.studio-duration-value[data-id="${el.dataset.id}"]`);if(out)out.textContent=`${q.steps.find(st=>st.id===el.dataset.id).duration} сек`;}changed(false);syncQuestionState();});
-document.addEventListener('change',ev=>{const el=ev.target;if(!el.matches('[name="autoMultiplier"]'))return;const input=el.closest('form').elements.priceMultiplier;input.disabled=el.checked;input.closest('label').hidden=el.checked;if(el.checked)input.value=el.dataset.autoValue;});
+document.addEventListener('change',ev=>{const el=ev.target;if(!el.matches('[name="autoMultiplier"]'))return;const input=el.closest('form').elements.priceMultiplier;const reveal=input.closest('.studio-multiplier-reveal');input.disabled=el.checked;reveal.classList.toggle('is-open',!el.checked);reveal.inert=el.checked;reveal.setAttribute('aria-hidden',String(el.checked));if(el.checked)input.value=el.dataset.autoValue;});
 document.addEventListener('change',ev=>{const el=ev.target;if(!el.matches('[data-duration-toggle]'))return;const q=activeQuestion(),st=q?.steps.find(st=>st.id===el.dataset.id);if(!st)return;snapshot();if(el.checked)st.duration=st.customDuration||10;else{st.customDuration=st.duration;st.duration=0;}focused=false;el.closest('.studio-duration').outerHTML=durationControl(st,q.steps.indexOf(st));changed(false);syncQuestionState();});
 document.addEventListener('change',ev=>{if(ev.target.matches('[data-field],[data-step-field]')){focused=false;}});
 document.addEventListener('keydown',ev=>{if((ev.metaKey||ev.ctrlKey)&&ev.key.toLowerCase()==='z'&&!ev.target.matches('input,textarea')&&!$('#dialog').open&&screen==='editor'){ev.preventDefault();actions[ev.shiftKey?'redo':'undo']();}});

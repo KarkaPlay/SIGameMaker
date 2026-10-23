@@ -136,7 +136,6 @@ dialog.studio-round-picker{width:402px}
 /* Neutral initial focus; keyboard focus on controls remains visible after Tab. */
 .dialog-heading #dialog-title:focus{outline:none}
 .studio-settings-popover[data-closing]{pointer-events:none}
-.studio-settings-popover .settings-form .studio-manual-multiplier[hidden]{display:none}
 /* The auction mark is separate from the completion dot and does not replace the price. */
 .studio-question-cell.studio-question-auction{padding-top:20px;padding-bottom:8px;border-style:solid;border-color:#d4ad6b99}
 .studio-question-auction:not([aria-current]){background:#d4ad6b14}
@@ -144,3 +143,15 @@ dialog.studio-round-picker{width:402px}
 .studio-question-kind svg{width:14px;height:14px}
 .studio-question-cell[aria-current] .studio-question-kind{color:#966b28}
 .studio-question-auction>i{bottom:4px;right:4px}
+
+/* The checkbox stays above a reversible, naturally sized disclosure. */
+.studio-multiplier{gap:0}
+.studio-multiplier>p{margin-top:10px}
+.studio-multiplier-reveal{display:grid;grid-template-rows:0fr;opacity:0;visibility:hidden;pointer-events:none;transition:grid-template-rows .22s cubic-bezier(.2,.75,.25,1),opacity .18s ease,visibility 0s linear .22s}
+.studio-multiplier-reveal.is-open{grid-template-rows:1fr;opacity:1;visibility:visible;pointer-events:auto;transition-delay:0s}
+.studio-multiplier-reveal-clip{min-height:0;overflow:hidden}
+.studio-settings-popover .settings-form .studio-manual-multiplier{padding-top:10px;padding-bottom:4px}
+@media(prefers-reduced-motion:reduce){.studio-multiplier-reveal{transition:none}}
+
+/* Theme edit feedback without a compositing filter. */
+.studio-theme-edit:hover:not(:disabled){color:#d8e6ff;background:#ffffff14;box-shadow:0 2px 6px #102b6220}
