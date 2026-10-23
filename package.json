@@ -1,0 +1,1 @@
+{"name":"sigame-maker-workspace","private":true,"scripts":{"start":"npm --prefix si-studio start","build":"node build-cloudflare.mjs","build:cloudflare":"node build-cloudflare.mjs","test":"npm --prefix si-studio test"}}

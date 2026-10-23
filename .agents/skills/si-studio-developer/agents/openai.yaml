@@ -1,0 +1,4 @@
+interface:
+  display_name: "SI Studio — разработка сайта"
+  short_description: "UI/UX, сценарии и совместимые паки SIGame"
+  default_prompt: "Используй $si-studio-developer для доработки SI Studio с сохранением принципов интерфейса и совместимости .siq."
