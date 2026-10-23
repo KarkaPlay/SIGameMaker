@@ -1,3 +1,4 @@
+import {step} from './model.js';
 // Keep a single ordered scenario; sections are only its visual presentation.
 export function scenarioParts(steps){
  const marker=steps.findIndex(st=>st.type==='answer');
@@ -10,3 +11,7 @@ export function insertScenarioStep(steps,st,section='before'){
  const at=marker<0?steps.length:marker;
  return [...steps.slice(0,at),st,...steps.slice(at)];
 }
+
+// Repair only a missing marker in legacy drafts; preserve existing event IDs and content.
+export function ensureAnswerStep(steps){return steps.some(st=>st.type==='answer')?steps:[...steps,step('answer')];}
+export function removeScenarioStep(steps,id){const st=steps.find(st=>st.id===id);return !st||st.type==='answer'?steps:steps.filter(st=>st.id!==id);}
