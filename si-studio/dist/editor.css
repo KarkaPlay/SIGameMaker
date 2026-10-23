@@ -225,3 +225,96 @@ dialog.studio-round-picker{width:402px}
 .studio-readiness-fix:hover{background:#f8eedb;color:#87622b;box-shadow:inset 0 0 0 1px #e5cfaa}
 .studio-readiness-fix>span:last-child{flex:1;min-width:0}
 .studio-readiness-note{margin-top:12px;padding-top:10px}
+
+/* The game board and answer card share the same blue surface and cell treatment. */
+.studio-board,.studio-answer{background:radial-gradient(ellipse at 40% 0,#2e54a3,#1e3f7c 90%)}
+.studio-answer{margin-top:26px;padding:15px;border:1px solid #264789;border-radius:10px;box-shadow:0 5px 16px #1d3d7e14;color:#b6c8e6}
+.studio-answer:focus-within{border-color:#6e91d2;box-shadow:0 0 0 3px #315cdb0e,0 5px 16px #1d3d7e14}
+.studio-answer>.studio-answer-heading{display:flex;align-items:center;justify-content:flex-start;flex-wrap:nowrap;padding:10px 12px;border:1px solid #ffffff09;border-radius:5px;background:#ffffff06}
+.studio-answer-copy{min-width:0}
+.studio-answer h2{font-size:18px;font-weight:550;letter-spacing:-.2px;color:#ecd39f;line-height:1.4}
+.studio-answer-copy p{font-size:14px;line-height:1.5;color:#b6c8e6;margin-top:4px}
+.studio-answer>#correct-answer{margin-top:10px;min-height:52px;padding:13px 15px;background:#fff;border:1px solid #fff;border-radius:5px;font-size:17px;color:#315b9d;box-shadow:0 2px 8px #0a245f20}
+.studio-answer>#correct-answer::placeholder{color:#849bc0}
+.studio-answer>#correct-answer:focus{border-color:#bbcefa;box-shadow:0 0 0 3px #bbcefa33}
+.studio-answer>.studio-extra{border-top:1px solid #ffffff18;margin-top:15px;padding-top:12px}
+.studio-answer>.studio-extra>summary{color:#b6c8e6}
+.studio-answer>.studio-extra>summary:hover{color:#e5edff}
+.studio-answer>.studio-extra>label{color:#b6c8e6}
+.studio-answer>.studio-extra input,.studio-answer>.studio-extra textarea{background:#fff;border-color:#dce5f5;border-radius:5px;color:#315b9d}
+.studio-answer>.studio-extra input::placeholder,.studio-answer>.studio-extra textarea::placeholder{color:#849bc0}
+.studio-answer>.studio-extra input:focus,.studio-answer>.studio-extra textarea:focus{border-color:#bbcefa;box-shadow:0 0 0 3px #bbcefa33}
+@media(prefers-reduced-motion:no-preference){.studio-answer{transition:border-color .2s ease,box-shadow .2s ease}}
+
+/* Extra answer fields grow in normal flow, including while the disclosure closes. */
+.studio-answer>.studio-extra{display:block}
+.studio-extra-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:4px 0;color:#b6c8e6;font-size:14px;text-align:left;line-height:1.5}
+.studio-extra-toggle:hover{color:#e5edff}.studio-extra-chevron{transition:transform .24s ease}.studio-extra.is-open .studio-extra-chevron{transform:rotate(180deg)}
+.studio-extra-reveal{display:grid;grid-template-rows:0fr;opacity:0;visibility:hidden;transition:grid-template-rows .26s cubic-bezier(.2,.75,.25,1),opacity .2s ease,visibility 0s linear .26s}
+.studio-extra.is-open .studio-extra-reveal{grid-template-rows:1fr;opacity:1;visibility:visible;transition-delay:0s}
+.studio-extra-clip{min-height:0;overflow:hidden}.studio-extra-fields{display:flex;flex-direction:column;gap:20px;padding-top:18px}
+.studio-extra-fields>label{display:flex;flex-direction:column;gap:7px;color:#b6c8e6;font-size:14px;line-height:1.5;min-width:0}
+.studio-answer-list{min-width:0;max-width:100%;padding:3px 2px 6px}.studio-answer-list-heading{white-space:normal;overflow-wrap:anywhere;color:#b6c8e6;font-size:14px;line-height:1.5}
+.studio-answer-list-add{display:grid;place-items:center;flex:0 0 29px;width:29px;height:29px;border:1px solid #ffffff25;border-radius:5px;background:#ffffff0b;color:#bfd1f0;font-size:20px;line-height:1;padding:0}
+.studio-answer-list-add:hover{background:#ffffff22;border-color:#b6c8e6;color:#fff}
+.studio-answer-list ul{display:flex;flex-wrap:wrap;align-items:center;min-width:0;max-width:100%;gap:8px;list-style:none;margin:0;padding:0}
+.studio-answer-list li{display:flex;align-items:center;flex:0 0 auto;min-width:0;max-width:100%;overflow:hidden;transform-origin:left center}
+.studio-answer-entry{min-width:0;max-width:min(220px,100%);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left;font-size:14px;line-height:1.5;padding:5px 9px;border:1px solid #ffffff16;background:#ffffff0e;border-radius:5px;color:#e0e9fa}
+.studio-answer-entry:hover{background:#ffffff20;border-color:#ffffff44}
+.studio-settings-popover.studio-answer-entry-dialog{width:340px}
+.studio-answer-entry-form>label{display:block;font-size:14px;color:#6c819f;margin-bottom:8px;line-height:1.5}
+.studio-answer-entry-form>input{width:100%;font-size:16px;min-height:44px}.studio-answer-entry-form .dialog-footer{margin-top:16px}
+.studio-answer-entry-delete{display:flex;align-items:center;gap:6px;margin-right:auto;color:#c44758;font-size:14px;padding:8px 0}.studio-answer-entry-delete svg{width:17px;height:17px}
+@media(prefers-reduced-motion:reduce){.studio-extra-reveal,.studio-extra-chevron{transition:none}}
+
+.studio-answer-entry:focus-visible{outline-offset:-3px}
+
+/* Keep wrap transitions independent of flex reflow on every animation frame. */
+.studio-answer{position:relative}
+.studio-answer.is-answer-layout-moving{overflow:hidden;overflow-anchor:none}
+.is-answer-layout-moving .studio-extra-clip{overflow:visible}
+.studio-answer-motion-ghost{display:flex;align-items:center;overflow:hidden;z-index:1;transform-origin:left center;list-style:none}
+
+/* The editable price lives in the question title, beside its label. */
+.studio-question-price-heading{display:inline-flex;align-items:baseline;gap:6px;white-space:nowrap}
+.studio-question-price-button{font:inherit;letter-spacing:inherit;line-height:1.25;font-variant-numeric:tabular-nums;color:#426ba9;background:#edf3fc;border:1px solid #d8e3f4;border-radius:6px;padding:2px 8px}
+.studio-question-price-button:hover{color:#315cdb;background:#e2ecfc;border-color:#abc2e9}
+.studio-question-price-button[aria-expanded="true"]{color:#315cdb;border-color:#8ca9dc;background:#e2ecfc}
+
+/* Cat options stay compact beside the single question board. */
+.studio-cat-summary{grid-column:1/-1;display:flex;align-items:center;gap:12px;min-width:0;font-size:14px;color:#62748c}
+.studio-cat-summary span{flex:1;min-width:0;overflow-wrap:anywhere}.studio-cat-summary button{flex-shrink:0}
+.studio-question-cell.studio-question-cat{padding-top:20px;padding-bottom:8px;border-color:#acb9ee99}
+.studio-question-cat:not([aria-current]){background:#acb9ee14}.studio-question-cat .studio-question-kind{color:#bfcaf6;font-size:14px}
+.studio-question-cat[aria-current] .studio-question-kind{color:#5468ad}
+#cat-settings-form [hidden]{display:none}#cat-settings-form .form-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+#cat-settings-error:empty{display:none}#cat-settings-error{color:#b13b47}
+
+/* Cat settings share the event window, its positioning and panel motion. */
+.studio-cat-editor .studio-cat-choice-field{border:0;padding:0;margin:12px 0;min-width:0}
+.studio-cat-choice-field legend{padding:0;margin-bottom:7px;font-size:14px;color:#62748c}
+.studio-cat-editor .studio-cat-choices{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.studio-cat-editor .studio-round-choice{width:100%;aspect-ratio:auto;height:76px;padding:7px 4px;gap:5px;font-size:14px}
+.studio-cat-editor .studio-cat-choices[aria-label="Кому можно отдать вопрос"]{grid-template-columns:repeat(2,minmax(0,1fr))}
+.studio-cat-editor .settings-form label{color:#62748c;margin-bottom:9px;gap:5px}
+.studio-cat-editor .dialog-description{line-height:1.4;margin:0 0 9px}
+.studio-cat-editor .form-row{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.studio-cat-editor .form-row label{min-width:0}.studio-cat-editor input{min-width:0}
+.studio-cat-editor .studio-step-body{padding-bottom:6px}
+
+.studio-cat-editor{width:440px}
+.studio-cat-editor .studio-step-window-heading{padding:14px 16px}
+.studio-cat-editor .studio-step-body{padding:14px 16px 5px}
+.studio-cat-editor .studio-step-window-footer{padding:11px 16px;gap:10px}
+.studio-cat-editor .studio-round-choice-symbol svg{width:24px;height:24px}
+
+.studio-cat-editor .studio-round-choice>span:last-child{max-width:100%;overflow-wrap:anywhere}
+.studio-cat-editor .studio-cat-choices[aria-label="Кому можно отдать вопрос"] .studio-round-choice-symbol{height:32px;display:grid;place-items:center}
+.studio-cat-editor .studio-cat-choices[aria-label="Кому можно отдать вопрос"] svg{width:36px;height:32px}
+
+.studio-cat-editor .studio-cat-choices[aria-label="Кому можно отдать вопрос"] .studio-round-choice{height:84px}
+.studio-cat-editor .studio-cat-choices[aria-label="Стоимость кота"] .studio-round-choice>span:last-child{white-space:nowrap;overflow-wrap:normal}
+.studio-cat-editor.is-cat-resizing{overflow:hidden}
+.studio-cat-editor [data-cat-prices]{overflow:hidden}
+
+.studio-current-type [data-action="cat-settings"]{width:120px;max-width:100%;padding:8px 4px;font-size:14px}

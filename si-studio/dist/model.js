@@ -1,8 +1,15 @@
 export const uid=()=>crypto.randomUUID();
 export const kinds={text:['Текст на экране','T'],image:['Изображение','▧'],audio:['Аудио','♫'],video:['Видео','▷'],answer:['Игроки отвечают','⌁']};
-export const questionTypes={simple:'Обычный вопрос',stake:'Вопрос-аукцион'};
+export const questionTypes={simple:'Обычный вопрос',stake:'Вопрос-аукцион',bagcat:'Кот в мешке'};
 export const questionType=q=>q.type===undefined?'simple':q.type;
-export const answerLabel=(q,r)=>r?.type==='final'?'Финалисты отвечают':questionType(q)==='stake'?'Победитель аукциона отвечает':'Игроки отвечают';
+export const answerLabel=(q,r)=>r?.type==='final'?'Финалисты отвечают':questionType(q)==='stake'?'Победитель аукциона отвечает':questionType(q)==='bagcat'?'Получатель кота отвечает':'Игроки отвечают';
+export const catSettings=q=>q.cat??{theme:'',selectionMode:'exceptCurrent',price:{minimum:0,maximum:0,step:0}};
+export function catSettingsError(cat){
+ if(!cat||typeof cat.theme!=='string'||!['any','exceptCurrent'].includes(cat.selectionMode))return 'Проверьте тему и правило передачи кота';
+ const p=cat.price;
+ if(!p||!['minimum','maximum','step'].every(k=>Number.isInteger(p[k])&&p[k]>=0&&p[k]<=2147483647)||p.maximum<p.minimum||p.maximum===0&&p.minimum!==0||p.minimum<p.maximum&&p.step>0&&(p.step>p.maximum-p.minimum||(p.maximum-p.minimum)%p.step!==0))return 'Укажите корректную стоимость кота: минимум, максимум и шаг';
+ return '';
+}
 export const canAddQuestion=(r,t)=>r?.type!=='final'||t.questions.length===0;
 export function finalRoundError(r){
  if(r.themes.some(t=>t.questions.length!==1))return 'В финале в каждой теме должен быть ровно один вопрос. Сначала измените состав тем или создайте отдельный раунд для финала.';
@@ -31,7 +38,8 @@ export function questionReadiness(q,r,media=new Map()){
  }
  const typeErrors=[];
  if(!Object.hasOwn(questionTypes,questionType(q)))typeErrors.push({message:'неподдерживаемый тип вопроса',detail:'Выберите поддерживаемый тип вопроса'});
- if(r.type==='final'&&questionType(q)!=='simple')typeErrors.push({message:'для финала нужен вопрос со скрытыми ставками, без аукциона',detail:'В финале используются скрытые ставки всех игроков'});
+ if(r.type==='final'&&questionType(q)!=='simple')typeErrors.push({message:'для финала нужен вопрос со скрытыми ставками, без аукциона и кота',detail:'В финале используются скрытые ставки всех игроков'});
+ if(questionType(q)==='bagcat'){const error=catSettingsError(catSettings(q));if(error)typeErrors.push({message:error,detail:error});}
  const answerErrors=answers===0?[{message:'нет шага «Игроки отвечают»',detail:'Добавьте событие ответа игроков'}]:answers>1?[{message:'повторные попытки с подсказками пока не поддерживаются: SIGame раскрывает ответ после первого таймера',detail:'Оставьте одно событие ответа игроков'}]:[];
  return [
   check('content','Есть содержимое вопроса до ответа игроков',q.steps.slice(0,split<0?undefined:split).some(s=>s.type==='text'?s.value.trim():s.mediaId)?[]:[{message:'нет содержимого вопроса',detail:'Добавьте текст или медиа перед ответом игроков'}]),
@@ -43,7 +51,7 @@ export function questionReadiness(q,r,media=new Map()){
  ];
 }
 export function questionChecklist(q,r,media=new Map()){
- return questionReadiness(q,r,media).filter(check=>['content','answer','events'].includes(check.id)).flatMap(check=>check.passed?[{label:check.label,passed:true}]:check.errors.map(error=>({label:error.detail,passed:false,target:check.id,stepId:error.stepId,field:error.field})));
+ return questionReadiness(q,r,media).filter(check=>['content','answer','events'].includes(check.id)||check.id==='type'&&!check.passed).flatMap(check=>check.passed?[{label:check.label,passed:true}]:check.errors.map(error=>({label:error.detail,passed:false,target:check.id,stepId:error.stepId,field:error.field})));
 }
 export function issues(p,media=new Map()){
  const errors=[];
@@ -60,4 +68,18 @@ export function issues(p,media=new Map()){
   }
  }
  return errors;
+}
+
+// Keep the established newline storage used by SIQ while editing one answer at a time.
+export const answerEntries=value=>String(value||'').split(/\r?\n/).map(text=>text.trim()).filter(Boolean);
+export function updateAnswerEntries(value,{text='',index=null,after=null,remove=false}={}){
+ const entries=answerEntries(value);
+ if(index!==null&&(!Number.isInteger(index)||index<0||index>=entries.length))throw Error('Ответ больше не существует');
+ if(remove){if(index===null)throw Error('Выберите ответ');entries.splice(index,1);}
+ else{
+  const clean=String(text).trim();if(!clean||/[\r\n]/.test(clean))throw Error('Введите один ответ');
+  if(index!==null)entries[index]=clean;
+  else{if(after!==null&&(!Number.isInteger(after)||after<0||after>=entries.length))throw Error('Ответ больше не существует');entries.splice(after===null?entries.length:after+1,0,clean);}
+ }
+ return entries.join('\n');
 }

@@ -1,19 +1,21 @@
+import {createAnswerListMotion} from './answer-list-motion.js';
 import {createPanelMotion} from './panel-motion.js';
 import {roundMultiplier,newRoundTheme,newQuestionPrice,newRound,validMultiplier} from './pricing.js';
 import {scenarioParts,insertScenarioStep,ensureAnswerStep,removeScenarioStep} from './scenario.js';
 import {countdown} from './preview-timer.js';
-import {uid,kinds,step,question,initial,questions,issues,questionChecklist,questionTypes,questionType,answerLabel,canAddQuestion,finalRoundError} from './model.js';
+import {uid,kinds,step,question,initial,questions,issues,answerEntries,updateAnswerEntries,questionChecklist,questionTypes,questionType,answerLabel,canAddQuestion,finalRoundError,catSettings,catSettingsError} from './model.js';
 import {exportSIQ,importSIQ} from './siq.js';
 import * as storage from './storage.js';
 import {installStepDrag,reorderSteps} from './step-drag.js';
 import {welcomeHTML} from './welcome.js';
 import {defaultSetup,setupHTML,setupRoundsHTML,setupPreviewHTML,buildPack} from './setup.js';
-const panelMotion=createPanelMotion();
+const panelMotion=createPanelMotion(),answerListMotion=createAnswerListMotion();
 const $=s=>document.querySelector(s),e=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const btn=(action,label,cls='',extra='')=>`<button ${extra.includes('type="submit"')?'':'type="button"'} class="${cls}" data-action="${action}" ${extra}>${label}</button>`;
 const icon=name=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{settings:'<path d="m9 3-.7 2.2-2 .9-2.1-.5-1.5 2.6 1.5 1.7v2.2l-1.5 1.7 1.5 2.6 2.1-.5 2 .9L9 19h3l.7-2.2 2-.9 2.1.5 1.5-2.6-1.5-1.7V9.9l1.5-1.7-1.5-2.6-2.1.5-2-.9L12 3Z"/><circle cx="10.5" cy="11" r="3"/>',edit:'<path d="m15 5 4 4M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15Z"/>',trash:'<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/>',media:'<rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1"/><path d="m3 17 5-5 4 4 4-6 5 7"/>',auction:'<path d="m14 13-8 8-3-3 8-8M14 3l7 7-4 4-7-7 4-4ZM3 22h12"/>',home:'<path d="m3 11 9-8 9 8M5 10v11h14V10M9 21v-7h6v7"/>'}[name]||''}</svg>`;
 let setupConfig=defaultSetup(),setupStage=0,setupSelected=0;
 let stepFocus=null,stopPreviewTimer=()=>{};
+let answerExtraOwner=null,answerExtraOpen=false;
 let screen='home',hasDraft=false,mediaLoaded=false,opening=false;
 let pack,media=new Map(),urls=new Map(),roundId,themeId,questionId,previewIndex=0,history=[],future=[],saveTimer,saveQueue=Promise.resolve(),saveRevision=0,savedRevision=0,storageOK=true,focused=false,uploadTarget;
 const activeRound=()=>pack.rounds.find(r=>r.id===roundId)||pack.rounds[0];
@@ -26,9 +28,61 @@ function changed(redraw=true){persist();if(redraw)render();else{const undo=$('[d
 async function persist(){const data=structuredClone(pack),revision=++saveRevision;$('#save-status')?.replaceChildren(document.createTextNode('Сохраняем…'));saveQueue=saveQueue.catch(()=>{}).then(()=>storage.saveDraft(data));try{await saveQueue;savedRevision=revision;storageOK=true;hasDraft=true;if(revision===saveRevision)$('#save-status')?.replaceChildren(document.createTextNode('Сохранено на устройстве'));}catch{storageOK=false;$('#save-status')?.replaceChildren(document.createTextNode('Не сохранено'));toast('Не удалось сохранить. Скачайте .siq, чтобы не потерять изменения.');}}
 const url=id=>{if(!media.has(id))return '';if(!urls.has(id))urls.set(id,URL.createObjectURL(media.get(id)));return urls.get(id);};
 
-function board(){const r=activeRound(),q=activeQuestion(),bad=new Set(issues(pack,media).map(x=>x.question));if(r?.type==='final')return finalBoard(r,q,bad);return `<section class="studio-board-pane" aria-labelledby="board-title"><div class="studio-pane-heading"><div><h2 id="board-title">Игровое поле</h2><p>Выберите вопрос, чтобы собрать его сценарий.</p></div></div><div class="studio-board-scroll" data-round="${r?.id||''}"><div class="studio-board">${r?.themes.map(t=>`<div class="studio-board-row" data-theme-id="${t.id}"><div class="studio-theme-name"><span title="${e(t.name)}">${e(t.name)}</span>${btn('theme-settings',icon('edit'),'studio-theme-edit',`data-id="${t.id}" aria-label="Настройки темы ${e(t.name)}"`)}</div><div class="studio-price-row">${t.questions.map(qq=>`<button type="button" class="studio-question-cell ${questionType(qq)==='stake'?'studio-question-auction':''} ${!bad.has(qq.id)?'complete':''}" data-action="board-question" data-theme="${t.id}" data-id="${qq.id}" ${qq.id===q?.id?'aria-current="true"':''} aria-label="${e(t.name)}, ${questionType(qq)==='stake'?'аукцион':'вопрос'} за ${qq.price}" title="${questionType(qq)==='stake'?'Аукцион · ':''}${e(qq.steps.find(s=>s.type==='text')?.value||'Новый вопрос')}"><span>${r.type==='final'?'?':qq.price}</span>${questionType(qq)==='stake'?`<b class="studio-question-kind" aria-hidden="true">${icon('auction')}</b>`:''}<i aria-hidden="true"></i></button>`).join('')}${btn('board-add-question','+','studio-add-cell',`data-id="${t.id}" aria-label="Добавить вопрос в тему ${e(t.name)}"`)}</div></div>`).join('')||'<div class="studio-board-empty">Добавьте первую тему — здесь появятся ваши вопросы.</div>'}${btn('add-theme','+','studio-add-cell studio-add-theme','aria-label="Добавить тему" title="Добавить тему"')}</div></div><div class="studio-board-bottom"><div class="studio-board-legend"><span><i></i> В работе</span><span><i class="ready"></i> Готов</span></div></div></section>`;}
+function board(){const r=activeRound(),q=activeQuestion(),bad=new Set(issues(pack,media).map(x=>x.question));if(r?.type==='final')return finalBoard(r,q,bad);return `<section class="studio-board-pane" aria-labelledby="board-title"><div class="studio-pane-heading"><div><h2 id="board-title">Игровое поле</h2><p>Выберите вопрос, чтобы собрать его сценарий.</p></div></div><div class="studio-board-scroll" data-round="${r?.id||''}"><div class="studio-board">${r?.themes.map(t=>`<div class="studio-board-row" data-theme-id="${t.id}"><div class="studio-theme-name"><span title="${e(t.name)}">${e(t.name)}</span>${btn('theme-settings',icon('edit'),'studio-theme-edit',`data-id="${t.id}" aria-label="Настройки темы ${e(t.name)}"`)}</div><div class="studio-price-row">${t.questions.map(qq=>`<button type="button" class="studio-question-cell ${questionType(qq)==='stake'?'studio-question-auction':questionType(qq)==='bagcat'?'studio-question-cat':''} ${!bad.has(qq.id)?'complete':''}" data-action="board-question" data-theme="${t.id}" data-id="${qq.id}" ${qq.id===q?.id?'aria-current="true"':''} aria-label="${e(t.name)}, ${questionType(qq)==='stake'?'аукцион':questionType(qq)==='bagcat'?'кот в мешке':'вопрос'} за ${qq.price}" title="${questionType(qq)==='stake'?'Аукцион · ':questionType(qq)==='bagcat'?'Кот в мешке · ':''}${e(qq.steps.find(s=>s.type==='text')?.value||'Новый вопрос')}"><span>${r.type==='final'?'?':qq.price}</span>${questionType(qq)==='stake'?`<b class="studio-question-kind" aria-hidden="true">${icon('auction')}</b>`:questionType(qq)==='bagcat'?'<b class="studio-question-kind" aria-hidden="true">?</b>':''}<i aria-hidden="true"></i></button>`).join('')}${btn('board-add-question','+','studio-add-cell',`data-id="${t.id}" aria-label="Добавить вопрос в тему ${e(t.name)}"`)}</div></div>`).join('')||'<div class="studio-board-empty">Добавьте первую тему — здесь появятся ваши вопросы.</div>'}${btn('add-theme','+','studio-add-cell studio-add-theme','aria-label="Добавить тему" title="Добавить тему"')}</div></div><div class="studio-board-bottom"><div class="studio-board-legend"><span><i></i> В работе</span><span><i class="ready"></i> Готов</span></div></div></section>`;}
 function finalBoard(r,q,bad){return `<section class="studio-board-pane" aria-labelledby="board-title"><div class="studio-pane-heading"><div><h2 id="board-title">Темы финала</h2><p>По одному вопросу в теме. Игроки исключают темы, пока не останется одна.</p></div></div><div class="studio-board-scroll" data-round="${r.id}"><div class="studio-board studio-final-board">${r.themes.map(t=>`<div class="studio-final-theme" data-theme-id="${t.id}"><div class="studio-final-questions">${t.questions.map((qq,i)=>btn('board-question',`<span>${e(t.name)}</span><small>${t.questions.length>1?`Вопрос ${i+1} · оставьте один в теме`:'Финальный вопрос'}</small><i aria-hidden="true"></i>`,`studio-question-cell studio-final-question ${!bad.has(qq.id)?'complete':''}`,`data-theme="${t.id}" data-id="${qq.id}" ${qq.id===q?.id?'aria-current="true"':''} aria-label="${e(t.name)}, финальный вопрос${t.questions.length>1?' '+(i+1):''}"`)).join('')||btn('board-add-question',`<span>${e(t.name)}</span><small>+ Добавить единственный вопрос</small>`,'studio-question-cell studio-final-question',`data-id="${t.id}"`)}</div>${btn('theme-settings',icon('edit'),'studio-final-theme-edit studio-theme-edit',`data-id="${t.id}" aria-label="Настройки темы ${e(t.name)}"`)}</div>`).join('')||'<div class="studio-board-empty">Добавьте тему — в ней появится один финальный вопрос.</div>'}${btn('add-theme','+ Добавить тему','studio-add-cell studio-add-theme','aria-label="Добавить тему"')}</div></div><div class="studio-board-bottom"><div class="studio-board-legend"><span><i></i> В работе</span><span><i class="ready"></i> Готов</span></div></div></section>`;}
-function editor(){const t=activeTheme(),q=activeQuestion();if(!q)return `<section class="studio-question-pane studio-empty"><span>✦</span><h2>С чего начнём?</h2><p>Добавьте тему или выберите вопрос на поле слева.</p>${btn(t?'add-question':activeRound()?'add-theme':'add-round','+ Добавить '+(t?'вопрос':activeRound()?'тему':'раунд'),'primary')}</section>`;const bad=issues(pack,media).some(x=>x.question===q.id);return `<section class="studio-question-pane" aria-labelledby="question-title"><div class="studio-question-heading"><div><p class="studio-question-theme">${e(t.name)}</p><h1 id="question-title">${activeRound()?.type==='final'?'Финальный вопрос':`Вопрос за ${q.price}`}${btn('question-readiness',bad?'В работе':'Готово',`question-status ${bad?'draft':''}`,'aria-haspopup="dialog" title="Что нужно для готовности вопроса"')}</h1></div><div class="studio-question-actions">${btn('preview','▷ Смотреть','secondary','title="Предпросмотр вопроса"')}${activeRound()?.type==='final'?'':btn('question-settings',icon('edit'),'icon-button','aria-label="Изменить стоимость вопроса" title="Изменить стоимость"')}${btn('delete-question',icon('trash'),'icon-button studio-delete-question',activeRound()?.type==='final'&&t.questions.length===1?'aria-label="Удалить тему с вопросом" title="Удалить тему с вопросом"':'aria-label="Удалить вопрос" title="Удалить вопрос"')}</div></div><div class="studio-question-content" data-question="${q.id}">${questionTypeHTML(q)}${scenarioHTML(q)}<section class="studio-answer"><div><h2>Правильный ответ</h2><span>До ответа видит только ведущий</span></div><label class="sr-only" for="correct-answer">Правильный ответ</label><input id="correct-answer" data-field="answer" value="${e(q.answer)}" placeholder="Что должны назвать игроки?"><details class="studio-extra"><summary>Варианты ответа и заметки</summary><label>Другие верные формулировки<textarea data-field="alternatives" placeholder="Каждый вариант с новой строки">${e(q.alternatives)}</textarea></label><label>Неверные ответы<textarea data-field="wrong" placeholder="Каждый вариант с новой строки">${e(q.wrong)}</textarea></label><label>Комментарий ведущему<textarea data-field="comment" placeholder="Уточнения и пояснения">${e(q.comment)}</textarea></label><label>Источник<input data-field="source" value="${e(q.source)}" placeholder="Ссылка или название источника"></label></details></section></div></section>`;}
+function editor(){const t=activeTheme(),q=activeQuestion();if(!q)return `<section class="studio-question-pane studio-empty"><span>✦</span><h2>С чего начнём?</h2><p>Добавьте тему или выберите вопрос на поле слева.</p>${btn(t?'add-question':activeRound()?'add-theme':'add-round','+ Добавить '+(t?'вопрос':activeRound()?'тему':'раунд'),'primary')}</section>`;const bad=issues(pack,media).some(x=>x.question===q.id);return `<section class="studio-question-pane" aria-labelledby="question-title"><div class="studio-question-heading"><div><p class="studio-question-theme">${e(t.name)}</p><h1 id="question-title">${activeRound()?.type==='final'?'Финальный вопрос':`<span class="studio-question-price-heading">Вопрос за ${btn('question-settings',e(q.price),'studio-question-price-button',`aria-label="Изменить стоимость вопроса: ${q.price}" aria-haspopup="dialog" title="Изменить стоимость"`)}</span>`}${btn('question-readiness',bad?'В работе':'Готово',`question-status ${bad?'draft':''}`,'aria-haspopup="dialog" title="Что нужно для готовности вопроса"')}</h1></div><div class="studio-question-actions">${btn('preview','▷ Смотреть','secondary','title="Предпросмотр вопроса"')}${btn('delete-question',icon('trash'),'icon-button studio-delete-question',activeRound()?.type==='final'&&t.questions.length===1?'aria-label="Удалить тему с вопросом" title="Удалить тему с вопросом"':'aria-label="Удалить вопрос" title="Удалить вопрос"')}</div></div><div class="studio-question-content" data-question="${q.id}">${questionTypeHTML(q)}${scenarioHTML(q)}<section class="studio-answer" aria-labelledby="correct-answer-title"><div class="studio-answer-heading"><div class="studio-answer-copy"><h2 id="correct-answer-title"><label for="correct-answer">Правильный ответ</label></h2><p id="correct-answer-hint">До ответа видит только ведущий</p></div></div><input id="correct-answer" aria-describedby="correct-answer-hint" data-field="answer" value="${e(q.answer)}" placeholder="Что должны назвать игроки?">${answerExtraHTML(q)}</section></div></section>`;}
+const answerListTitles={alternatives:'Другие верные формулировки',wrong:'Неверные ответы'};
+function answerListHTML(q,field){const entries=answerEntries(q[field]),title=answerListTitles[field];
+ return `<section class="studio-answer-list" data-answer-list="${field}" aria-label="${title}"><ul role="list"><li class="studio-answer-list-heading" role="presentation">${title}:</li>${entries.map((text,i)=>`<li>${btn('answer-entry-edit',e(text),'studio-answer-entry',`data-answer-field="${field}" data-index="${i}" aria-label="Изменить ответ: ${e(text)}" title="${e(text)} — изменить"`)}</li>`).join('')}<li class="studio-answer-add-slot" role="presentation">${btn('answer-entry-add','+','studio-answer-list-add',`data-answer-field="${field}" aria-label="Добавить: ${title.toLowerCase()}" title="Добавить ответ"`)}</li></ul></section>`;
+}
+
+function updateAnswerList(q,field,{index,after,remove}){
+ const card=$('.studio-answer'),list=card?.querySelector(`[data-answer-list="${field}"]`);if(!card||!list)return;
+ const inserted=index===null&&!remove?(after===null?answerEntries(q[field]).length-1:after+1):null;
+ const items=phase=>{
+  const result=new Map();
+  for(const group of card.querySelectorAll('[data-answer-list]'))for(const li of group.querySelectorAll('li')){
+   const entry=li.querySelector('[data-action="answer-entry-edit"]');let key;
+   if(entry){let i=Number(entry.dataset.index);if(phase==='after'&&group.dataset.answerList===field){if(remove&&i>=index)i++;else if(inserted!==null){if(i===inserted){result.set(`${field}:new`,li);continue;}if(i>inserted)i--;}}key=`entry:${i}`;}
+   else key=li.classList.contains('studio-answer-add-slot')?'add':'heading';
+   result.set(`${group.dataset.answerList}:${key}`,li);
+  }
+  for(const label of card.querySelectorAll('.studio-extra-fields>label'))result.set(`field:${label.querySelector('[data-field]').dataset.field}`,label);
+  return result;
+ };
+ answerListMotion.run(card,items,()=>{const template=document.createElement('div');template.innerHTML=answerListHTML(q,field);list.replaceWith(template.firstElementChild);});
+}
+
+function answerExtraHTML(q){const open=answerExtraOwner===q.id&&answerExtraOpen;
+ return `<div class="studio-extra ${open?'is-open':''}">${btn('toggle-answer-extra','<span>Варианты ответа и заметки</span><span class="studio-extra-chevron" aria-hidden="true">⌄</span>','studio-extra-toggle',`aria-expanded="${open}" aria-controls="answer-extra-content"`)}<div class="studio-extra-reveal" id="answer-extra-content" aria-hidden="${!open}" ${open?'':'inert'}><div class="studio-extra-clip"><div class="studio-extra-fields">${answerListHTML(q,'alternatives')}${answerListHTML(q,'wrong')}<label>Комментарий ведущему<textarea data-field="comment" placeholder="Уточнения и пояснения">${e(q.comment)}</textarea></label><label>Источник<input data-field="source" value="${e(q.source)}" placeholder="Ссылка или название источника"></label></div></div></div></div>`;
+}
+function toggleAnswerExtra(button){
+ const block=button.closest('.studio-extra'),open=!block.classList.contains('is-open');answerExtraOwner=activeQuestion().id;answerExtraOpen=open;
+ block.classList.toggle('is-open',open);button.setAttribute('aria-expanded',String(open));const reveal=block.querySelector('.studio-extra-reveal');reveal.inert=!open;reveal.setAttribute('aria-hidden',String(!open));
+}
+function answerEntryPopup(anchor,edit=false){
+ const q=activeQuestion(),field=anchor.dataset.answerField;if(!q||!Object.hasOwn(answerListTitles,field))return;
+ const entries=answerEntries(q[field]),index=edit?Number(anchor.dataset.index):null,after=anchor.hasAttribute('data-after')?Number(anchor.dataset.after):null;
+ if(edit&&(!Number.isInteger(index)||!entries[index]))return;
+ dialog(edit?'Изменить ответ':field==='alternatives'?'Добавить верную формулировку':'Добавить неверный ответ',`<form id="answer-entry-form" class="studio-answer-entry-form" data-question="${q.id}" data-answer-field="${field}" ${index===null?'':`data-index="${index}"`} ${after===null?'':`data-after="${after}"`}><label for="answer-entry-input">${field==='alternatives'?'Верная формулировка':'Неверный ответ'}</label><input id="answer-entry-input" name="text" value="${e(edit?entries[index]:'')}" placeholder="Введите ответ" required autocomplete="off"><div class="dialog-footer">${edit?btn('answer-entry-delete',icon('trash')+' Удалить','studio-answer-entry-delete'):''}${btn('save-answer-entry',edit?'Сохранить':'Добавить','primary','type="submit"')}</div></form>`,'',anchor);
+ const form=$('#answer-entry-form');form.dataset.original=q[field]||'';$('#dialog').classList.add('studio-answer-entry-dialog');positionSettings();
+ // This window opens specifically for text input; the close button never receives initial focus.
+ form.elements.text.focus({preventScroll:true});
+}
+async function saveAnswerEntry(form,remove=false){
+ if(panelMotion.isClosing($('#dialog')))return;
+ const q=activeQuestion(),field=form.dataset.answerField;if(!q||q.id!==form.dataset.question||!Object.hasOwn(answerListTitles,field))return;
+ if((q[field]||'')!==form.dataset.original){toast('Список изменился. Откройте ответ заново.');return;}
+ const index=form.hasAttribute('data-index')?Number(form.dataset.index):null,after=form.hasAttribute('data-after')?Number(form.dataset.after):null;
+ let next;try{next=updateAnswerEntries(q[field],{text:form.elements.text.value,index,after,remove});}catch(err){form.elements.text.setCustomValidity(err.message);form.elements.text.reportValidity();return;}
+ const modified=next!==q[field];if(modified){snapshot();q[field]=next;focused=false;changed(false);}
+ await closeDialog();if(screen!=='editor'||activeQuestion()!==q)return;
+ if(modified)updateAnswerList(q,field,{index,after,remove});
+ const list=$(`[data-answer-list="${field}"]`),newIndex=remove?null:index??(after===null?answerEntries(next).length-1:after+1);
+ const target=newIndex===null?list?.querySelector('.studio-answer-list-add'):list?.querySelector(`[data-action="answer-entry-edit"][data-index="${newIndex}"]`);target?.focus({preventScroll:true});
+
+}
+
 function questionReadinessPopup(anchor){
  const q=activeQuestion(),r=activeRound();if(!q)return;
  const checks=questionChecklist(q,r,media),missing=checks.filter(check=>!check.passed).length;
@@ -39,6 +93,7 @@ async function fixReadiness(button){
  const q=activeQuestion(),owner=q?.id;if(!q||$('#dialog').dataset.question!==owner)return;
  const target=button.dataset.target,id=button.dataset.step,field=button.dataset.field;
  await closeDialog();if(activeQuestion()?.id!==owner||screen!=='editor')return;
+ if(target==='type'){if(questionType(q)==='bagcat')catSettingsDialog();else questionTypePicker($('#question-type'));return;}
  if(target==='answer'){const input=$('#correct-answer');input?.scrollIntoView({block:'nearest'});input?.focus({preventScroll:true});return;}
  let st=q.steps.find(st=>st.id===id);
  if(target==='content'){
@@ -56,7 +111,68 @@ async function fixReadiness(button){
 const questionTypeChoices=[['simple','Обычный вопрос','▦'],['stake','Вопрос-аукцион',icon('auction')],['secret','С секретом','✦'],['bagcat','Кот в мешке','?'],['norisk','Без риска','◇']];
 function questionTypeHTML(q){if(activeRound()?.type==='final')return `<section class="studio-final-rules"><strong>Скрытые ставки</strong><p>Все финалисты делают свою ставку и отвечают письменно. Стоимость определяется ставкой каждого игрока.</p>${questionType(q)!=='simple'?btn('use-final-rules','Применить правила финала','secondary'):''}</section>`;
  const type=questionType(q),choice=questionTypeChoices.find(c=>c[0]===type)||questionTypeChoices[0];
- return `<section class="studio-question-type"><div class="studio-current-type"><span>Тип вопроса</span>${btn('question-type-picker',`<span class="studio-round-choice-symbol" aria-hidden="true">${choice[2]}</span><span>${choice[1]}</span>`,'studio-round-choice studio-type-trigger',`id="question-type" aria-label="Тип вопроса: ${choice[1]}" aria-haspopup="dialog"`)}</div><p id="question-type-help">${type==='stake'?`Перед показом вопроса SIGame проводит торги. Отвечает только победитель; он получает или теряет сумму своей ставки. Номинальная стоимость — ${q.price}.`:'Отвечает первый нажавший кнопку. После ошибки могут отвечать другие игроки.'}</p></section>`;
+ return `<section class="studio-question-type"><div class="studio-current-type"><span>Тип вопроса</span>${btn('question-type-picker',`<span class="studio-round-choice-symbol" aria-hidden="true">${choice[2]}</span><span>${choice[1]}</span>`,'studio-round-choice studio-type-trigger',`id="question-type" aria-label="Тип вопроса: ${choice[1]}" aria-haspopup="dialog"`)}${type==='bagcat'?`${btn('cat-settings','Настроить кота','secondary','aria-haspopup="dialog" aria-controls="step-editor" aria-expanded="false"')}`:''}</div><p id="question-type-help">${type==='stake'?`Перед показом вопроса SIGame проводит торги. Отвечает только победитель; он получает или теряет сумму своей ставки. Номинальная стоимость — ${q.price}.`:type==='bagcat'?'Выбравший вопрос передаёт его игроку. Затем раскрывается тема, выбирается стоимость и отвечает только получатель кота.':'Отвечает первый нажавший кнопку. После ошибки могут отвечать другие игроки.'}</p>${type==='bagcat'?`<div class="studio-cat-summary"><span>${e(catSummary(q))}</span></div>`:''}</section>`;
+}
+function catSummary(q){const c=catSettings(q),p=c.price;return `${c.theme||activeTheme()?.name} · ${p.maximum===0?'Минимум или максимум раунда':p.minimum===p.maximum?p.minimum:`${p.minimum}–${p.maximum}${p.step?' с шагом '+p.step:''}`} · ${c.selectionMode==='any'?'Можно оставить себе':'Только другому игроку'}`;}
+function catChoiceButtons(name,current,choices){return `<div class="studio-round-choices studio-cat-choices" role="group" aria-label="${name==='selectionMode'?'Кому можно отдать вопрос':'Стоимость кота'}">${choices.map(([value,label,symbol])=>btn('cat-choice',`<span class="studio-round-choice-symbol" aria-hidden="true">${symbol}</span><span>${label}</span>`,'studio-round-choice',`data-field-name="${name}" data-value="${value}" aria-pressed="${current===value}"`)).join('')}</div>`;}
+function catSettingsBody(q){
+ const c=catSettings(q),p=c.price,mode=p.maximum===0?'round':p.minimum===p.maximum?'fixed':'range';
+ const field=(label,name,value)=>`<label>${label}<input name="${name}" type="number" min="0" max="2147483647" step="1" required value="${value}"></label>`;
+ const symbol=(paths,viewBox='0 0 24 24')=>`<svg viewBox="${viewBox}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+ return `<form id="cat-settings-form" class="settings-form" novalidate data-question="${q.id}" data-round="${activeRound().id}"><div class="studio-step-body"><label>Тема кота<input name="theme" value="${e(c.theme)}" placeholder="${e(activeTheme().name)}"></label><p class="dialog-description">Тема откроется после передачи вопроса. Пустое поле — тема с игрового поля.</p><fieldset class="studio-cat-choice-field"><legend>Кому можно отдать вопрос</legend><input type="hidden" name="selectionMode" value="${c.selectionMode}">${catChoiceButtons('selectionMode',c.selectionMode,[['exceptCurrent','Другому игроку',symbol('<circle cx="5" cy="6" r="3"/><path d="M1 21v-5a4 4 0 0 1 8 0v5"/><circle cx="31" cy="6" r="3"/><path d="M27 21v-5a4 4 0 0 1 8 0v5M13 12h10m-3-3 3 3-3 3"/>','0 0 36 24')],['any','Можно себе',symbol('<circle cx="16" cy="12" r="3"/><path d="M10 24v-2a6 6 0 0 1 12 0v2M7 6a13 13 0 1 1-3 17M4 28v-5h5"/>','0 0 32 32')]])}</fieldset><fieldset class="studio-cat-choice-field"><legend>Стоимость кота</legend><input type="hidden" name="priceMode" value="${mode}">${catChoiceButtons('priceMode',mode,[['round','По раунду',symbol('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10m6-10v10"/>')],['fixed','Фиксированная',symbol('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>')],['range','Диапазон',symbol('<path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="3" fill="white"/><circle cx="16" cy="17" r="3" fill="white"/>')]])}</fieldset><p class="dialog-description" data-cat-price-hint></p><div data-cat-prices><div data-cat-fixed>${field('Стоимость','fixed',p.maximum||q.price||100)}</div><div data-cat-range class="form-row">${field('От','minimum',mode==='range'?p.minimum:100)}${field('До','maximum',p.maximum||500)}${field('Шаг (0 — любой)','step',p.step)}</div></div><p class="dialog-description" role="alert" id="cat-settings-error"></p></div><div class="studio-step-window-footer"><span>Изменения сохраняются автоматически</span>${btn('close-step-editor','Готово','secondary')}</div></form>`;
+}
+function catSettingsDialog(){
+ const q=activeQuestion();if(!q||questionType(q)!=='bagcat'||activeRound()?.type==='final')return;
+ if(stepWindow.open)closeStepEditor(true);
+ stepPanelMode='cat';stepOwner=q.id;focused=false;stepWindow.inert=false;stepWindow.replaceChildren();paintStepEditor();
+ stepWindow.show();positionStepEditor();markEditedStep();stepWindow.querySelector('h2').focus({preventScroll:true});panelMotion.open(stepWindow);
+}
+function selectCatChoice(button){
+ const form=button.closest('#cat-settings-form');if(!form)return;
+ const name=button.dataset.fieldName;if(form.elements[name].value===button.dataset.value)return;
+ const update=()=>{form.elements[name].value=button.dataset.value;
+ for(const choice of form.querySelectorAll(`[data-field-name="${name}"]`))choice.setAttribute('aria-pressed',String(choice===button));
+ syncCatPriceFields();focused=false;saveCatSettings(form,name);focused=false;};
+ if(name==='priceMode')animateCatLayout(update);else update();positionStepEditor();
+}
+let catLayoutMotion=null;
+function stopCatLayoutMotion(){
+ const state=catLayoutMotion;if(!state)return;catLayoutMotion=null;
+ for(const motion of state.motions)motion.cancel();stepWindow.classList.remove('is-cat-resizing');
+}
+function animateCatLayout(update){
+ const prices=stepWindow.querySelector('[data-cat-prices]'),before=stepWindow.getBoundingClientRect(),beforePrices=prices.getBoundingClientRect().height;
+ stopCatLayoutMotion();update();positionStepEditor();
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const after=stepWindow.getBoundingClientRect(),afterPrices=prices.getBoundingClientRect().height;
+ const state={motions:[]};catLayoutMotion=state;stepWindow.classList.add('is-cat-resizing');
+ const options={duration:240,easing:'cubic-bezier(.2,.75,.25,1)'};
+ const animate=(node,frames)=>{const motion=node.animate(frames,options);state.motions.push(motion);return motion;};
+ const resize=animate(stepWindow,[{height:`${before.height}px`,top:`${before.top}px`},{height:`${after.height}px`,top:`${after.top}px`}]);
+ animate(prices,[{height:`${beforePrices}px`},{height:`${afterPrices}px`}]);
+ const incoming=prices.querySelector(':scope > :not([hidden])');
+ for(const node of [incoming,stepWindow.querySelector('[data-cat-price-hint]')].filter(Boolean))animate(node,[{opacity:0,transform:'translateY(-4px)'},{opacity:1,transform:'translateY(0)'}]);
+ resize.onfinish=()=>{if(catLayoutMotion!==state)return;stopCatLayoutMotion();positionStepEditor();};
+}
+function syncCatPriceFields(){const form=$('#cat-settings-form');if(!form)return;for(const [selector,mode]of [['[data-cat-fixed]','fixed'],['[data-cat-range]','range']]){const box=form.querySelector(selector),shown=form.elements.priceMode.value===mode;box.hidden=!shown;for(const input of box.querySelectorAll('input'))input.disabled=!shown;}form.querySelector('[data-cat-price-hint]').textContent=({round:'Получатель выберет минимум или максимум раунда.',fixed:'Эта стоимость назначается получателю.',range:'Получатель выберет стоимость в указанном диапазоне.'})[form.elements.priceMode.value];}
+function saveCatSettings(form,field){
+ if(!stepWindow.open||panelMotion.isClosing(stepWindow))return;
+ const q=settingsTarget('question',form.dataset.question,form.dataset.round);if(!q||q.id!==activeQuestion()?.id||questionType(q)!=='bagcat')return;
+ const v=new FormData(form),cat=structuredClone(catSettings(q));
+ if(field==='theme')cat.theme=v.get('theme').trim();
+ else if(field==='selectionMode')cat.selectionMode=v.get('selectionMode');
+ else{
+  const mode=v.get('priceMode'),inputs=[...form.querySelectorAll('input[type="number"]')].filter(input=>!input.disabled);
+  const valid=inputs.every(input=>input.value.trim()!==''&&input.validity.valid);
+  const price=mode==='round'?{minimum:0,maximum:0,step:0}:mode==='fixed'?{minimum:Number(v.get('fixed')),maximum:Number(v.get('fixed')),step:0}:{minimum:Number(v.get('minimum')),maximum:Number(v.get('maximum')),step:Number(v.get('step'))};
+  const error=!valid?'Заполните стоимость целыми неотрицательными числами.':catSettingsError({...cat,price})||(mode!=='round'&&price.maximum===0?'Для нулевой стоимости выберите правила раунда.':'');
+  $('#cat-settings-error').textContent=error?`${error} Стоимость пока не сохранена.`:'';
+  if(error)return;
+  cat.price=price;
+ }
+ if(JSON.stringify(cat)===JSON.stringify(catSettings(q)))return;
+ if(!focused){snapshot();focused=true;}q.cat=cat;changed(false);
+ const summary=$('.studio-cat-summary span');if(summary)summary.textContent=catSummary(q);syncQuestionState();
 }
 function questionTypePicker(anchor){
  const q=activeQuestion();if(!q||activeRound()?.type==='final')return;
@@ -68,7 +184,7 @@ function stepPalette(section,disabled=false){return `<div class="studio-step-pal
 function scenarioHTML(q){
  const parts=scenarioParts(q.steps);
  const cards=steps=>steps.map(st=>stepCard(st,q.steps.indexOf(st),q)).join('');
- return `<div class="studio-timeline-heading"><h2>Сценарий вопроса</h2><span>Событий: ${q.steps.length} · сверху вниз</span></div><div class="studio-steps"><section class="studio-scenario-section" data-section="before" aria-label="До ответа игроков"><div class="studio-section-steps">${cards(parts.before)}</div>${stepPalette('before')}</section><section class="studio-scenario-section studio-response-section" data-section="answer" aria-label="Ответ игроков"><div class="studio-section-steps">${cards(parts.answer)}</div></section><section class="studio-scenario-section" data-section="after" aria-label="После ответа игроков"><div class="studio-section-divider"><h3>${activeRound()?.type==='final'?'После ответов финалистов':questionType(q)==='stake'?'После ответа или окончания времени':'После таймера или верного ответа'}</h3></div><div class="studio-section-steps">${cards(parts.after)}</div>${stepPalette('after',!parts.answer.length)}</section></div>`;
+ return `<div class="studio-timeline-heading"><h2>Сценарий вопроса</h2><span>Событий: ${q.steps.length} · сверху вниз</span></div><div class="studio-steps"><section class="studio-scenario-section" data-section="before" aria-label="До ответа игроков"><div class="studio-section-steps">${cards(parts.before)}</div>${stepPalette('before')}</section><section class="studio-scenario-section studio-response-section" data-section="answer" aria-label="Ответ игроков"><div class="studio-section-steps">${cards(parts.answer)}</div></section><section class="studio-scenario-section" data-section="after" aria-label="После ответа игроков"><div class="studio-section-divider"><h3>${activeRound()?.type==='final'?'После ответов финалистов':['stake','bagcat'].includes(questionType(q))?'После ответа или окончания времени':'После таймера или верного ответа'}</h3></div><div class="studio-section-steps">${cards(parts.after)}</div>${stepPalette('after',!parts.answer.length)}</section></div>`;
 }
 function durationControl(st,i){
  const custom=st.duration>0,label=st.type==='answer'?'Время на ответ':'Длительность шага';
@@ -82,11 +198,11 @@ function stepSummary(st){
 function stepCard(st,i,q){const [name,symbol]=kinds[st.type];return `<div class="studio-event-row"><article class="studio-step studio-timeline-event studio-type-${st.type}" data-step="${st.id}"><button type="button" class="studio-step-handle" draggable="true" aria-label="Перетащить шаг ${i+1}" title="Перетащить шаг">⠿</button>${btn('edit-step',`<span class="studio-step-number">${String(i+1).padStart(2,'0')}</span><span class="studio-step-symbol ${st.type}" aria-hidden="true">${symbol}</span><span class="studio-event-copy"><strong class="studio-step-label">${st.type==='answer'?answerLabel(q,activeRound()):name}</strong><span class="studio-event-summary">${e(stepSummary(st))}</span></span>`,'studio-event-trigger',`data-id="${st.id}" aria-haspopup="dialog" aria-controls="step-editor" aria-expanded="false"`)}</article>${btn('step-actions','⋯','studio-event-actions',`data-id="${st.id}" aria-label="Действия с событием ${i+1}" aria-haspopup="dialog" title="Действия с событием"`)}</div>`;}
 function stepEditorBody(st,i,q){return `<div class="studio-step-body">${st.type==='answer'?`${durationControl(st,i)}`:st.type==='text'?`<textarea class="studio-step-text" data-step-field="value" data-id="${st.id}" aria-label="Текст шага ${i+1}" placeholder="Напишите вопрос или часть истории…">${e(st.value)}</textarea>`:`<button type="button" class="studio-upload" data-action="upload" data-id="${st.id}">${st.mediaId&&st.type==='image'?`<img src="${url(st.mediaId)}" alt="${e(st.filename)}">`:`<span aria-hidden="true">${st.mediaId?'✓':'↥'}</span>`}<strong>${st.mediaId?e(st.filename):'Выбрать файл'}</strong><small>${st.mediaId?'Нажмите, чтобы заменить файл':st.type==='image'?'PNG, JPG, WebP или GIF':st.type==='audio'?'MP3, WAV или OGG':'MP4 или WebM'}</small></button>`}<div class="studio-step-bottom">${st.type!=='answer'?`<div class="studio-step-options">${btn('toggle-step-options','Параметры шага <span aria-hidden="true">⌄</span>','studio-options-toggle',`aria-expanded="false" aria-controls="step-options-${st.id}"`)}<div class="studio-options-reveal" id="step-options-${st.id}" aria-hidden="true" inert><div class="studio-options-clip">${durationControl(st,i)}<label class="studio-check"><input type="checkbox" data-step-field="wait" data-id="${st.id}" ${st.wait?'checked':''}> Пауза перед следующим шагом</label></div></div></div>`:'<span></span>'}</div></div>`;}
 const stepWindow=document.createElement('dialog');stepWindow.id='step-editor';stepWindow.className='studio-step-editor';document.body.append(stepWindow);
-let stepOwner=null,stepClosingFocus=null;
-function markEditedStep(){document.querySelectorAll('.studio-event-trigger').forEach(b=>{const selected=stepWindow.open&&!panelMotion.isClosing(stepWindow)&&b.dataset.id===stepFocus;b.setAttribute('aria-expanded',String(selected));b.closest('.studio-step').classList.toggle('is-editing',selected);});}
+let stepOwner=null,stepClosingFocus=null,stepPanelMode='step';
+function markEditedStep(){document.querySelectorAll('.studio-event-trigger').forEach(b=>{const selected=stepPanelMode==='step'&&stepWindow.open&&!panelMotion.isClosing(stepWindow)&&b.dataset.id===stepFocus;b.setAttribute('aria-expanded',String(selected));b.closest('.studio-step').classList.toggle('is-editing',selected);});const cat=$('[data-action="cat-settings"]');cat?.setAttribute('aria-expanded',String(stepPanelMode==='cat'&&stepWindow.open&&!panelMotion.isClosing(stepWindow)));}
 function positionStepEditor(){
- if(!stepWindow.open||panelMotion.isClosing(stepWindow))return;
- const anchor=$(`.studio-event-trigger[data-id="${stepFocus}"]`),pane=$('.studio-question-content');if(!anchor||!pane)return;
+ if(!stepWindow.open||panelMotion.isClosing(stepWindow)||catLayoutMotion)return;
+ const anchor=stepPanelMode==='cat'?$('[data-action="cat-settings"]'):$(`.studio-event-trigger[data-id="${stepFocus}"]`),pane=$('.studio-question-content');if(!anchor||!pane)return;
  const a=anchor.getBoundingClientRect(),r=pane.getBoundingClientRect(),w=stepWindow.offsetWidth,h=stepWindow.offsetHeight;
  // Sit beside the timeline, overlapping the board instead of obscuring the event list.
  const left=Math.max(12,Math.min(r.left-w+14,innerWidth-w-12));
@@ -94,7 +210,18 @@ function positionStepEditor(){
  stepWindow.style.left=`${left}px`;stepWindow.style.top=`${top}px`;stepWindow.style.transformOrigin=`right ${Math.max(20,Math.min(a.top+a.height/2-top,h-20))}px`;
 }
 function paintStepEditor(){
- const q=activeQuestion(),st=q?.steps.find(st=>st.id===stepFocus);
+ const q=activeQuestion();
+ if(stepPanelMode==='cat'){
+  if(screen!=='editor'||q?.id!==stepOwner||questionType(q)!=='bagcat'||activeRound()?.type==='final'){closeStepEditor(true);return;}
+  // Keep an in-progress settings form intact when unrelated editor content redraws.
+  if(!stepWindow.querySelector('#cat-settings-form')){
+   stepWindow.className='studio-step-editor studio-type-text studio-cat-editor';
+   stepWindow.innerHTML=`<div class="studio-step-window-heading"><div><p>Настройки вопроса</p><h2 id="step-editor-title" tabindex="-1">Кот в мешке</h2></div>${btn('close-step-editor','×','icon-button','aria-label="Закрыть настройки кота"')}</div>${catSettingsBody(q)}`;
+   stepWindow.setAttribute('aria-labelledby','step-editor-title');syncCatPriceFields();
+  }
+  positionStepEditor();markEditedStep();return;
+ }
+ const st=q?.steps.find(st=>st.id===stepFocus);
  if(screen!=='editor'||q?.id!==stepOwner||!st){closeStepEditor(true);return;}
  const previousFocus=stepWindow.contains(document.activeElement)?document.activeElement:null,focusAction=previousFocus?.dataset.action,optionsOpen=stepWindow.querySelector('.studio-step-options')?.classList.contains('is-open'),scroll=stepWindow.scrollTop;
  const i=q.steps.indexOf(st);stepWindow.className=`studio-step-editor studio-type-${st.type}`;
@@ -104,19 +231,19 @@ function paintStepEditor(){
 function openStepEditor(id){
  if(!activeQuestion()?.steps.some(st=>st.id===id))return;
  if(stepWindow.open)closeStepEditor(true);
- stepFocus=id;stepOwner=activeQuestion()?.id;focused=false;stepWindow.inert=false;stepWindow.replaceChildren();paintStepEditor();
+ stepPanelMode='step';stepFocus=id;stepOwner=activeQuestion()?.id;focused=false;stepWindow.inert=false;stepWindow.replaceChildren();paintStepEditor();
  if(!stepWindow.querySelector('#step-editor-title'))return;
  stepWindow.show();positionStepEditor();markEditedStep();stepWindow.querySelector('h2').focus({preventScroll:true});panelMotion.open(stepWindow);
 }
 function closeStepEditor(immediate=false,{restoreFocus=true}={}){
- const id=stepFocus;if(!panelMotion.isClosing(stepWindow))stepClosingFocus={restore:restoreFocus};else if(!restoreFocus)stepClosingFocus.restore=false;const focusPolicy=stepClosingFocus;stepWindow.inert=true;focused=false;const result=panelMotion.close(stepWindow,{immediate});markEditedStep();
- result.then(()=>{if(stepWindow.open)return;markEditedStep();const trigger=$(`.studio-event-trigger[data-id="${id}"]`);if(!focusPolicy.restore){if(document.activeElement===trigger)trigger.blur();return;}if(stepWindow.contains(document.activeElement)||document.activeElement===document.body)trigger?.focus({preventScroll:true});});return result;
+ stopCatLayoutMotion();const id=stepFocus,mode=stepPanelMode;if(!panelMotion.isClosing(stepWindow))stepClosingFocus={restore:restoreFocus};else if(!restoreFocus)stepClosingFocus.restore=false;const focusPolicy=stepClosingFocus;stepWindow.inert=true;focused=false;const result=panelMotion.close(stepWindow,{immediate});markEditedStep();
+ result.then(()=>{if(stepWindow.open)return;markEditedStep();const trigger=mode==='cat'?$('[data-action="cat-settings"]'):$(`.studio-event-trigger[data-id="${id}"]`);if(!focusPolicy.restore){if(document.activeElement===trigger)trigger.blur();return;}if(stepWindow.contains(document.activeElement)||document.activeElement===document.body)trigger?.focus({preventScroll:true});});return result;
 }
 new ResizeObserver(positionStepEditor).observe(stepWindow);
 window.addEventListener('resize',positionStepEditor);document.addEventListener('scroll',positionStepEditor,true);
 stepWindow.addEventListener('close',()=>{if(!stepWindow.open)markEditedStep();});
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&stepWindow.open&&!$('#dialog').open){ev.preventDefault();closeStepEditor();}});
-document.addEventListener('pointerdown',ev=>{if(stepWindow.open&&!stepWindow.contains(ev.target)&&!ev.target.closest('[data-action="edit-step"]'))closeStepEditor(false,{restoreFocus:false});});
+document.addEventListener('pointerdown',ev=>{if(stepWindow.open&&!stepWindow.contains(ev.target)&&!ev.target.closest('[data-action="edit-step"],[data-action="cat-settings"]'))closeStepEditor(false,{restoreFocus:false});});
 
 function setStepOptions(options,open){
  options.classList.toggle('is-open',open);options.querySelector('.studio-options-toggle').setAttribute('aria-expanded',String(open));
@@ -209,7 +336,7 @@ function paintPreviewDialog(){
  const q=activeQuestion();if(!q)return;
  const st=q.steps[previewIndex],marker=q.steps.findIndex(s=>s.type==='answer'),revealing=!st||marker>=0&&previewIndex>marker;
  const content=st?previewContent(q,previewIndex):`<div class="screen-text">${e(q.answer)||'Ответ ещё не указан'}</div>`;
- dialog('Предпросмотр вопроса',`<div class="full-preview"><div class="game-screen"><div class="screen-header"><span>${e(activeTheme()?.name)}</span><b>${activeRound()?.type==='final'?'Финал':questionType(q)==='stake'?'Аукцион':q.price}</b></div><div class="screen-content">${content}</div><div class="screen-brand">${revealing?'ПРАВИЛЬНЫЙ ОТВЕТ':'СВОЯ ИГРА ✦'}</div></div><div class="preview-control"><span>${st?`Шаг ${previewIndex+1} из ${q.steps.length}`:'Правильный ответ'}</span><div>${btn('play-prev','←','secondary',previewIndex===0?'disabled aria-label="Предыдущий шаг"':'aria-label="Предыдущий шаг"')}${st?.type==='answer'&&activeRound()?.type!=='final'?btn('play-correct','Ответили верно','primary'):btn(revealing&&previewIndex>=q.steps.length-1?'close-dialog':'play-next',revealing&&previewIndex>=q.steps.length-1?'Завершить просмотр':previewIndex===q.steps.length-1?'Правильный ответ':'Следующий шаг →','primary')}</div></div><div class="preview-restart">${btn('preview','↻ Начать заново','secondary')}<p>${activeRound()?.type==='final'?'Исключение тем, скрытые ставки и ответы финалистов проходят в SIGame; здесь показан сценарий вопроса. ':''}${questionType(q)==='stake'&&activeRound()?.type!=='final'?'Торги проходят в SIGame перед показом вопроса; здесь показан сценарий для победителя. ':''}Шаги переключаются вручную. Таймер ответа отсчитывается автоматически.</p></div></div>`);
+ dialog('Предпросмотр вопроса',`<div class="full-preview"><div class="game-screen"><div class="screen-header"><span>${e(questionType(q)==='bagcat'?(catSettings(q).theme||activeTheme()?.name):activeTheme()?.name)}</span><b>${activeRound()?.type==='final'?'Финал':questionType(q)==='stake'?'Аукцион':questionType(q)==='bagcat'?'Кот в мешке':q.price}</b></div><div class="screen-content">${content}</div><div class="screen-brand">${revealing?'ПРАВИЛЬНЫЙ ОТВЕТ':'СВОЯ ИГРА ✦'}</div></div><div class="preview-control"><span>${st?`Шаг ${previewIndex+1} из ${q.steps.length}`:'Правильный ответ'}</span><div>${btn('play-prev','←','secondary',previewIndex===0?'disabled aria-label="Предыдущий шаг"':'aria-label="Предыдущий шаг"')}${st?.type==='answer'&&activeRound()?.type!=='final'?btn('play-correct','Ответили верно','primary'):btn(revealing&&previewIndex>=q.steps.length-1?'close-dialog':'play-next',revealing&&previewIndex>=q.steps.length-1?'Завершить просмотр':previewIndex===q.steps.length-1?'Правильный ответ':'Следующий шаг →','primary')}</div></div><div class="preview-restart">${btn('preview','↻ Начать заново','secondary')}<p>${activeRound()?.type==='final'?'Исключение тем, скрытые ставки и ответы финалистов проходят в SIGame; здесь показан сценарий вопроса. ':''}${questionType(q)==='stake'&&activeRound()?.type!=='final'?'Торги проходят в SIGame перед показом вопроса; здесь показан сценарий для победителя. ':''}${questionType(q)==='bagcat'&&activeRound()?.type!=='final'?'Передача кота и выбор стоимости проходят в SIGame; здесь показан сценарий для получателя. ':''}Шаги переключаются вручную. Таймер ответа отсчитывается автоматически.</p></div></div>`);
  $('#dialog').classList.add('studio-preview-dialog');
  if(st?.type==='answer')stopPreviewTimer=countdown(st.duration||10,left=>{const label=$('#preview-countdown');if(label)label.textContent=left;},()=>{if($('#dialog').open)actions['play-next']();});
  const player=$('#dialog audio, #dialog video');if(player)player.play().catch(()=>{});
@@ -230,6 +357,10 @@ function remove(type,id,ownerRoundId=activeRound()?.id){
 
 const actions={
  'close-dialog':()=>closeDialog(),
+ 'toggle-answer-extra':b=>toggleAnswerExtra(b),
+ 'answer-entry-add':b=>answerEntryPopup(b),
+ 'answer-entry-edit':b=>answerEntryPopup(b,true),
+ 'answer-entry-delete':b=>saveAnswerEntry(b.closest('form'),true),
  'edit-step':b=>openStepEditor(b.dataset.id),
  'question-readiness':b=>questionReadinessPopup(b),
  'fix-readiness':b=>fixReadiness(b),
@@ -256,6 +387,8 @@ const actions={
  'delete-round':b=>remove('round',b?.dataset.id),'delete-theme':b=>remove('theme',b?.dataset.id,b?.dataset.round||activeRound()?.id),'delete-question':()=>remove(activeRound()?.type==='final'&&activeTheme().questions.length===1?'theme':'question'),
  'use-final-rules':()=>{if(activeRound()?.type!=='final')return;snapshot();activeQuestion().type='simple';changed();},
  'select-round-type':b=>{const form=b.closest('#settings-form');if(!form||!['standard','final'].includes(b.dataset.type))return;form.elements.type.value=b.dataset.type;form.querySelectorAll('[data-action="select-round-type"]:not(:disabled)').forEach(button=>button.setAttribute('aria-pressed',String(button===b)));const multiplier=form.querySelector('.studio-multiplier');multiplier.hidden=multiplier.disabled=b.dataset.type==='final';positionSettings();},
+ 'cat-settings':()=>catSettingsDialog(),
+ 'cat-choice':b=>selectCatChoice(b),
  'question-type-picker':b=>questionTypePicker(b),
  'select-question-type':b=>{const d=$('#dialog'),r=pack.rounds.find(r=>r.id===d.dataset.round),q=settingsTarget('question',d.dataset.question,d.dataset.round),type=b.dataset.type;if(!q||r?.type==='final'||!Object.hasOwn(questionTypes,type))return;const different=questionType(q)!==type;const closing=closeDialog();if(different){snapshot();q.type=type;focused=false;changed();}closing.then(()=>$('#question-type')?.focus({preventScroll:true}));},
  'new-pack':()=>createPackForm(),
@@ -268,7 +401,7 @@ const actions={
  'resume-pack':()=>enterEditor(),
  'open-demo':()=>openDemo(),
  'export':()=>showValidation(true),'import':()=>$('#import-file').click(),
- 'undo':()=>{if(!history.length)return;future.push(structuredClone(pack));pack=history.pop();for(const q of questions(pack))q.steps=ensureAnswerStep(q.steps);changed();},'redo':()=>{if(!future.length)return;history.push(structuredClone(pack));pack=future.pop();for(const q of questions(pack))q.steps=ensureAnswerStep(q.steps);changed();},
+ 'undo':()=>{if(!history.length)return;if(stepPanelMode==='cat')closeStepEditor(true);future.push(structuredClone(pack));pack=history.pop();for(const q of questions(pack))q.steps=ensureAnswerStep(q.steps);changed();},'redo':()=>{if(!future.length)return;if(stepPanelMode==='cat')closeStepEditor(true);history.push(structuredClone(pack));pack=future.pop();for(const q of questions(pack))q.steps=ensureAnswerStep(q.steps);changed();},
  'preview':()=>showPreview(),
  'play-correct':()=>{const q=activeQuestion();previewIndex=q.steps.findLastIndex(s=>s.type==='answer');actions['play-next']();},
  'play-prev':()=>{previewIndex=Math.max(0,previewIndex-1);paintPreviewDialog();},'play-next':()=>{const q=activeQuestion();previewIndex=Math.min(q.steps.length,previewIndex+1);paintPreviewDialog();},
@@ -278,11 +411,12 @@ const actions={
 installStepDrag({getQuestion:()=>screen==='editor'?activeQuestion():null,onMove:({id,beforeId,questionId})=>{const q=activeQuestion();if(q?.id!==questionId)return;const next=reorderSteps(q.steps,id,beforeId);if(next===q.steps)return;snapshot();q.steps=next;changed();toast('Порядок шагов изменён');}});
 function moveStep(b,delta){const a=activeQuestion().steps,i=a.findIndex(s=>s.id===b.dataset.id);if(i<0||i+delta<0||i+delta>=a.length)return;snapshot();[a[i],a[i+delta]]=[a[i+delta],a[i]];changed();}
 document.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(panelMotion.isClosing($('#dialog'))&&b?.closest('#dialog'))return;if(panelMotion.isClosing(stepWindow)&&b?.closest('#step-editor'))return;if(!b||b.disabled||b.type==='submit'&&b.closest('form'))return;if(b.tagName==='A')ev.preventDefault();actions[b.dataset.action]?.(b);});
-document.addEventListener('submit',ev=>{if(panelMotion.isClosing($('#dialog'))&&ev.target.closest('#dialog')){ev.preventDefault();return;}if(ev.target.id==='setup-form'){ev.preventDefault();captureSetup();if(setupStage===0&&!setupConfig.name.trim()){const input=$('#setup-form input[name="name"]');input.setCustomValidity('Введите название пака.');input.reportValidity();input.addEventListener('input',()=>input.setCustomValidity(''),{once:true});return;}if(setupStage<2){setupStage++;render();window.scrollTo(0,0);}else{try{const next=buildPack(setupConfig);startPack(next,next.name);}catch(err){toast(err.message);}}return;}if(ev.target.id!=='settings-form')return;ev.preventDefault();const form=ev.target,type=form.dataset.type,target=settingsTarget(type,form.dataset.id,form.dataset.round);if(!target){toast('Объект больше не существует. Откройте настройки заново.');return;}const values=new FormData(form);if(type==='round'&&values.get('type')==='final'&&target.type!=='final'){const error=finalRoundError(target);if(error){toast(error);return;}}const nextRoundType=values.get('type');if(type==='round'&&nextRoundType!=='final'&&!values.has('autoMultiplier')&&!validMultiplier(Number(values.get('priceMultiplier')))){toast('Укажите целый множитель от 1.');return;}snapshot();if(type==='round'){if(nextRoundType!=='final')target.priceMultiplier=values.has('autoMultiplier')?null:Number(values.get('priceMultiplier'));values.delete('priceMultiplier');values.delete('autoMultiplier');}for(const [key,value]of values)target[key]=['price','difficulty'].includes(key)?Number(value):value.trim();closeDialog();changed();});
-function syncQuestionState(){const q=activeQuestion();if(!q)return;for(const st of q.steps){const card=$(`.studio-step[data-step="${st.id}"]`);if(!card)continue;card.querySelector('.studio-event-summary').textContent=stepSummary(st);if(st.type==='answer')card.querySelector('.studio-step-label').textContent=answerLabel(q,activeRound());}const bad=issues(pack,media).some(x=>x.question===q.id);const cell=$(`.studio-question-cell[data-id="${q.id}"]`);if(cell){cell.classList.toggle('complete',!bad);cell.title=(questionType(q)==='stake'?'Аукцион · ':'')+(q.steps.find(st=>st.type==='text')?.value||'Новый вопрос');}}
+document.addEventListener('submit',ev=>{if(panelMotion.isClosing($('#dialog'))&&ev.target.closest('#dialog')){ev.preventDefault();return;}if(ev.target.id==='cat-settings-form'){ev.preventDefault();return;}if(ev.target.id==='answer-entry-form'){ev.preventDefault();saveAnswerEntry(ev.target);return;}if(ev.target.id==='setup-form'){ev.preventDefault();captureSetup();if(setupStage===0&&!setupConfig.name.trim()){const input=$('#setup-form input[name="name"]');input.setCustomValidity('Введите название пака.');input.reportValidity();input.addEventListener('input',()=>input.setCustomValidity(''),{once:true});return;}if(setupStage<2){setupStage++;render();window.scrollTo(0,0);}else{try{const next=buildPack(setupConfig);startPack(next,next.name);}catch(err){toast(err.message);}}return;}if(ev.target.id!=='settings-form')return;ev.preventDefault();const form=ev.target,type=form.dataset.type,target=settingsTarget(type,form.dataset.id,form.dataset.round);if(!target){toast('Объект больше не существует. Откройте настройки заново.');return;}const values=new FormData(form);if(type==='round'&&values.get('type')==='final'&&target.type!=='final'){const error=finalRoundError(target);if(error){toast(error);return;}}const nextRoundType=values.get('type');if(type==='round'&&nextRoundType!=='final'&&!values.has('autoMultiplier')&&!validMultiplier(Number(values.get('priceMultiplier')))){toast('Укажите целый множитель от 1.');return;}snapshot();if(type==='round'){if(nextRoundType!=='final')target.priceMultiplier=values.has('autoMultiplier')?null:Number(values.get('priceMultiplier'));values.delete('priceMultiplier');values.delete('autoMultiplier');}for(const [key,value]of values)target[key]=['price','difficulty'].includes(key)?Number(value):value.trim();closeDialog();changed();});
+function syncQuestionState(){const q=activeQuestion();if(!q)return;for(const st of q.steps){const card=$(`.studio-step[data-step="${st.id}"]`);if(!card)continue;card.querySelector('.studio-event-summary').textContent=stepSummary(st);if(st.type==='answer')card.querySelector('.studio-step-label').textContent=answerLabel(q,activeRound());}const bad=issues(pack,media).some(x=>x.question===q.id);const cell=$(`.studio-question-cell[data-id="${q.id}"]`);if(cell){cell.classList.toggle('complete',!bad);cell.title=(questionType(q)==='stake'?'Аукцион · ':questionType(q)==='bagcat'?'Кот в мешке · ':'')+(q.steps.find(st=>st.type==='text')?.value||'Новый вопрос');}}
 
-document.addEventListener('focusin',ev=>{if(ev.target.matches('[data-field],[data-step-field]'))focused=false;});
-document.addEventListener('input',ev=>{const el=ev.target,q=activeQuestion();if(!q||!el.matches('[data-field],[data-step-field]'))return;if(!focused){snapshot();focused=true;}if(el.dataset.field)q[el.dataset.field]=el.value;else{const s=q.steps.find(s=>s.id===el.dataset.id);s[el.dataset.stepField]=el.type==='checkbox'?el.checked:el.type==='range'?Math.max(1,Math.min(60,Math.round(Number(el.value)||1))):el.value;}if(el.dataset.stepField==='duration'){const out=$(`.studio-duration-value[data-id="${el.dataset.id}"]`);if(out)out.textContent=`${q.steps.find(st=>st.id===el.dataset.id).duration} сек`;}changed(false);syncQuestionState();});
+document.addEventListener('focusin',ev=>{if(ev.target.matches('[data-field],[data-step-field],#cat-settings-form input'))focused=false;});
+document.addEventListener('input',ev=>{const form=ev.target.closest('#cat-settings-form');if(form)saveCatSettings(form,ev.target.name);});
+document.addEventListener('input',ev=>{if(ev.target.id==='answer-entry-input')ev.target.setCustomValidity('');const el=ev.target,q=activeQuestion();if(!q||!el.matches('[data-field],[data-step-field]'))return;if(!focused){snapshot();focused=true;}if(el.dataset.field)q[el.dataset.field]=el.value;else{const s=q.steps.find(s=>s.id===el.dataset.id);s[el.dataset.stepField]=el.type==='checkbox'?el.checked:el.type==='range'?Math.max(1,Math.min(60,Math.round(Number(el.value)||1))):el.value;}if(el.dataset.stepField==='duration'){const out=$(`.studio-duration-value[data-id="${el.dataset.id}"]`);if(out)out.textContent=`${q.steps.find(st=>st.id===el.dataset.id).duration} сек`;}changed(false);syncQuestionState();});
 document.addEventListener('change',ev=>{const el=ev.target;if(!el.matches('[name="autoMultiplier"]'))return;const input=el.closest('form').elements.priceMultiplier;const reveal=input.closest('.studio-multiplier-reveal');input.disabled=el.checked;reveal.classList.toggle('is-open',!el.checked);reveal.inert=el.checked;reveal.setAttribute('aria-hidden',String(el.checked));if(el.checked)input.value=el.dataset.autoValue;});
 document.addEventListener('change',ev=>{const el=ev.target;if(!el.matches('[data-duration-toggle]'))return;const q=activeQuestion(),st=q?.steps.find(st=>st.id===el.dataset.id);if(!st)return;snapshot();if(el.checked)st.duration=st.customDuration||10;else{st.customDuration=st.duration;st.duration=0;}focused=false;el.closest('.studio-duration').outerHTML=durationControl(st,q.steps.indexOf(st));changed(false);syncQuestionState();});
 document.addEventListener('change',ev=>{if(ev.target.matches('[data-field],[data-step-field]')){focused=false;}});

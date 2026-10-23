@@ -21,7 +21,7 @@ async function collect(directory, prefix = '') {
 
 try {
   const files = await collect(source);
-  for (const required of ['index.html', 'app.js', 'model.js', 'pricing.js', 'panel-motion.js', 'storage.js', 'siq.js', 'style.css', 'welcome.js', 'welcome.css', 'setup.js', 'editor.css', 'step-drag.js', 'preview-timer.js', 'scenario.js', 'vendor/fflate.js', 'vendor/fflate.LICENSE']) {
+  for (const required of ['index.html', 'app.js', 'model.js', 'pricing.js', 'panel-motion.js', 'answer-list-motion.js', 'storage.js', 'siq.js', 'style.css', 'welcome.js', 'welcome.css', 'setup.js', 'editor.css', 'step-drag.js', 'preview-timer.js', 'scenario.js', 'vendor/fflate.js', 'vendor/fflate.LICENSE']) {
     if (!files.includes(join(...required.split('/')))) {
       throw new Error(`В исходниках отсутствует ${required}`);
     }

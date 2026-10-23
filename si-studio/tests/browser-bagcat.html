@@ -1,0 +1,25 @@
+<!doctype html><meta charset="utf-8"><title>Проверка котов</title><h1>Проверка котов SIQ</h1><pre id="result">Проверяем…</pre><script type="module">
+import {initial,step,issues} from '../dist/model.js';
+import {exportSIQ,importSIQ,contentXML} from '../dist/siq.js';
+import {zipSync,strToU8} from '../dist/vendor/fflate.js';
+const check=(ok,message)=>{if(!ok)throw Error(message);};
+const archive=xml=>zipSync({'content.xml':strToU8(xml)});
+try{
+ const p=initial(),q=p.rounds[0].themes[0].questions[0],media=new Map();q.type='bagcat';q.cat={theme:'Новая <тема> & кот',selectionMode:'any',price:{minimum:100,maximum:500,step:100}};q.price=700;q.steps[1].duration=17;q.alternatives='Альтернатива';q.wrong='Ошибка';q.comment='Комментарий';q.source='Источник';
+ for(const type of ['image','audio','video'])for(const reveal of [false,true]){const s=step(type);s.mediaId=crypto.randomUUID();s.filename='файл.'+({image:'png',audio:'wav',video:'webm'})[type];s.duration=4;s.wait=false;media.set(s.mediaId,new Blob([type+reveal]));if(reveal)q.steps.push(s);else q.steps.splice(q.steps.findIndex(s=>s.type==='answer'),0,s);}
+ const imported=importSIQ(await exportSIQ(p,media)),rq=imported.pack.rounds[0].themes[0].questions[0];
+ check(rq.type==='bagcat'&&JSON.stringify(rq.cat)===JSON.stringify(q.cat)&&rq.price===700,'Тип или номинал потерян');check(rq.steps.find(s=>s.type==='answer').duration===17,'Таймер потерян');check(rq.answer===q.answer&&rq.alternatives===q.alternatives&&rq.wrong===q.wrong&&rq.comment===q.comment&&rq.source===q.source,'Ответы или заметки потеряны');
+ check(rq.steps.map(s=>s.type).join(',')==='text,image,audio,video,answer,image,audio,video','Порядок потерян');
+ for(const [i,s]of rq.steps.entries()){if(!s.mediaId)continue;check(await imported.media.get(s.mediaId).text()===s.type+(i>4),'Бинарные медиа потеряны');check(s.duration===4&&s.wait===false,'Параметры шага потеряны');}
+ check(issues(imported.pack,imported.media).length===0,'Импорт не проходит проверку');check(imported.pack.rounds[0].themes[0].questions[1].type==='simple','Обычный сосед изменён');
+ const legacy=`<?xml version="1.0"?><package version="4" name="Старый пак"><rounds><round name="Раунд"><themes><theme name="Тема"><questions><question price="300"><type name="auction"/><scenario><atom>Вопрос</atom><atom type="marker"/><atom>Раскрытие</atom></scenario><right><answer>Ответ</answer></right></question></questions></theme></themes></round></rounds></package>`;
+ const old=importSIQ(archive(legacy)),lq=old.pack.rounds[0].themes[0].questions[0];check(lq.type==='stake'&&lq.price===300&&lq.steps.map(s=>s.type).join(',')==='text,answer,text','SIQ 4 auction не перенесён');check(contentXML(old.pack).includes('type="stake"'),'SIQ 4 не обновлён');
+ for(const type of ['simple','default','withButton']){const ordinary=importSIQ(archive(legacy.replace('name="auction"',`name="${type}"`)));check(ordinary.pack.rounds[0].themes[0].questions[0].type==='simple','Совместимость обычных вопросов');}
+ const xml=contentXML(initial());
+ const unsupported=[xml.replace('type="simple"','type="secretPublicPrice"'),xml.replace('type="simple"','type="stakeAll"'),xml.replace('<params>','<script/><params>'),xml.replace('<params>','<params><param name="custom">value</param>'),legacy.replace('<type name="auction"/>','<type name="auction"><param name="custom">value</param></type>')];
+ for(const fixture of unsupported){let failed=false;try{importSIQ(archive(fixture));}catch{failed=true;}check(failed,'Неподдерживаемая логика молча потеряна');}
+ const catXML=contentXML(p);for(const change of [x=>x.replace('>any</param>','>nobody</param>'),x=>x.replace('maximum="500"','maximum="50"'),x=>x.replace('step="100"','step="300"'),x=>x.replace('name="theme"','name="theme" type="content"'),x=>x.replace('name="price"','name="price" isRef="True"'),x=>x.replace('<params>','<params><param name="theme">duplicate</param>')]){let failed=false;try{importSIQ(archive(change(catXML)));}catch{failed=true;}check(failed,'Некорректные параметры кота приняты');}
+ for(const selectionMode of ['any','exceptCurrent'])for(const price of [{minimum:0,maximum:0,step:0},{minimum:500,maximum:500,step:0},{minimum:100,maximum:500,step:0}]){q.cat={theme:'',selectionMode,price};const copy=importSIQ(await exportSIQ(p,media));check(JSON.stringify(copy.pack.rounds[0].themes[0].questions[0].cat)===JSON.stringify(q.cat),'Настройки кота потеряны');}
+ document.querySelector('#result').textContent='PASS: cat settings, price modes, recipient rules, malformed parameters rejected;  mixed SIQ 5 secret, nominal, timer, answers, metadata, all 6 binary media before/after, order, durations, wait; legacy SIQ 4 auction; ordinary aliases; unsupported types/scripts/parameters rejected.';
+}catch(e){document.querySelector('#result').textContent='FAIL: '+e.stack;}
+</script>
