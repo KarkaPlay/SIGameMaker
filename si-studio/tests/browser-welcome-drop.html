@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8"><title>Проверка открытия перетаскиванием</title>
+<h1>Перетаскивание .siq</h1><pre id="result">Проверяем…</pre>
+<iframe title="Тестовое окно" src="../dist/" style="width:1280px;height:720px;border:1px solid #ccc"></iframe>
+<script type="module">
+import {initial} from '../dist/model.js';
+import {exportSIQ} from '../dist/siq.js';
+const frame=document.querySelector('iframe'),result=document.querySelector('#result');
+const check=(ok,message)=>{if(!ok)throw Error(message);};
+const until=async fn=>{for(let i=0;i<100;i++){if(fn())return;await new Promise(r=>setTimeout(r,30));}throw Error('Ожидание интерфейса');};
+try{
+ await until(()=>frame.contentDocument.querySelector('.welcome-page'));
+ const w=frame.contentWindow,d=w.document;
+ await Promise.all(d.getAnimations().map(a=>a.finished));
+ // Never replace a draft on the test origin.
+ check(!d.querySelector('.welcome-recent'),'На этом адресе есть черновик. Используйте новый тестовый порт.');
+ const fire=(type,files,types)=>{const transfer=new w.DataTransfer();for(const file of files)transfer.items.add(file);if(types)transfer.setData('text/plain','Текст');const ev=new w.DragEvent(type,{bubbles:true,cancelable:true,dataTransfer:transfer,relatedTarget:d.body});d.querySelector('.welcome-open').dispatchEvent(ev);return ev;};
+ const bytes=await exportSIQ(initial(),new Map()),file=new w.File([bytes],'Проверка.SIQ');
+ for(const [width,height]of [[1280,720],[1440,900]]){
+  frame.style.width=width+'px';frame.style.height=height+'px';await new Promise(r=>w.requestAnimationFrame(()=>w.requestAnimationFrame(r)));
+  check(d.documentElement.scrollWidth<=width&&d.documentElement.scrollHeight<=height,'Меню не помещается '+width+'×'+height+': '+d.documentElement.scrollWidth+'×'+d.documentElement.scrollHeight);
+  check(fire('dragenter',[file]).defaultPrevented,'Браузер не перехватил файл');check(d.querySelector('.is-file-drag'),'Нет подсветки');
+  fire('dragenter',[file]);fire('dragleave',[file]);check(d.querySelector('.is-file-drag'),'Подсветка пропала при переходе между элементами');
+  fire('dragend',[file]);check(!d.querySelector('.is-file-drag'),'Подсветка осталась после отмены');
+ }
+ check(!fire('dragover',[],true).defaultPrevented,'Перехвачен перенос текста');
+ fire('drop',[new w.File(['x'],'bad.txt')]);check(d.body.textContent.includes('формате .siq'),'Нет ошибки формата');
+ fire('drop',[file,file]);check(d.body.textContent.includes('один файл .siq'),'Нет ошибки нескольких файлов');
+ fire('drop',[new w.File(['broken'],'broken.siq')]);await until(()=>d.querySelector('#dialog').open);check(d.querySelector('.welcome-page'),'Ошибка открыла редактор');d.querySelector('[data-action="close-dialog"]').click();await until(()=>!d.querySelector('#dialog').open);
+ fire('drop',[file]);await until(()=>d.querySelector('.studio-shell'));check(d.querySelector('.studio-pack-name').textContent==='Хороший вечер','Не открыт импортированный пак');
+ d.querySelector('[data-action="home"]').click();await until(()=>d.querySelector('.welcome-open'));let confirmations=0;w.confirm=()=>{confirmations++;return false;};fire('drop',[file]);await until(()=>confirmations===1);check(d.querySelector('.welcome-recent'),'Отмена замены потеряла черновик');
+ result.textContent='PASS: 1280×720 и 1440×900 без прокрутки; подсветка, вложенные элементы, отмена, перенос текста, неверное расширение, несколько файлов, повреждённый архив, .SIQ → редактор, отмена замены черновика. События переноса синтетические; перенос из Finder вручную не проверен.';
+}catch(err){result.textContent='FAIL: '+err.stack;}
+</script>

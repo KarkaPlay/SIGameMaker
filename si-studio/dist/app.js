@@ -7,7 +7,7 @@ import {uid,kinds,step,question,initial,questions,issues,answerEntries,updateAns
 import {exportSIQ,importSIQ} from './siq.js';
 import * as storage from './storage.js';
 import {installStepDrag,reorderSteps} from './step-drag.js';
-import {welcomeHTML} from './welcome.js';
+import {welcomeHTML,installWelcomeDrop} from './welcome.js';
 import {defaultSetup,setupHTML,setupRoundsHTML,setupPreviewHTML,buildPack} from './setup.js';
 const panelMotion=createPanelMotion(),answerListMotion=createAnswerListMotion();
 const $=s=>document.querySelector(s),e=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -432,7 +432,16 @@ function outsideCompactDialog(ev){const d=$('#dialog'),r=d.getBoundingClientRect
 $('#dialog').addEventListener('pointerdown',ev=>{compactPointerOutside=outsideCompactDialog(ev);});
 $('#dialog').addEventListener('click',ev=>{if(compactPointerOutside&&outsideCompactDialog(ev))closeDialog();compactPointerOutside=false;});
 $('#media-file').addEventListener('change',async ev=>{const file=ev.target.files[0];ev.target.value='';if(!file||!uploadTarget)return;if(file.size>100*1024*1024)return toast('Выберите файл до 100 МБ');const {q,id}=uploadTarget,s=q.steps.find(s=>s.id===id);if(!s)return;const allowed={image:['png','jpg','jpeg','webp','gif'],audio:['mp3','wav','ogg'],video:['mp4','webm']};if(!allowed[s.type].includes(file.name.split('.').pop().toLowerCase()))return toast('Формат файла не подходит для этого шага');try{const mediaId=uid();await storage.putMedia(mediaId,file);snapshot();media.set(mediaId,file);s.mediaId=mediaId;s.filename=file.name;s.value='';changed();toast('Файл добавлен и сохранён на устройстве');}catch{toast('Не удалось сохранить файл. Возможно, закончилось место в браузере.');}});
-$('#import-file').addEventListener('change',async ev=>{const file=ev.target.files[0];ev.target.value='';if(!file)return;if(file.size>250*1024*1024)return toast('Пак должен быть меньше 250 МБ');try{const result=importSIQ(new Uint8Array(await file.arrayBuffer()));if(hasDraft&&!confirm(`Открыть «${result.pack.name}» вместо черновика «${pack.name}»? Для отдельной копии сначала скачайте текущий пак. Замену можно отменить в редакторе.`))return;for(const [id,blob]of result.media)await storage.putMedia(id,blob);await loadMedia();snapshot();pack=result.pack;for(const q of questions(pack))q.steps=ensureAnswerStep(q.steps);for(const [id,blob]of result.media)media.set(id,blob);select(pack.rounds[0],pack.rounds[0]?.themes[0],pack.rounds[0]?.themes[0]?.questions[0]);screen='editor';closeDialog();changed();toast('Пак открыт');}catch(err){dialog('Не удалось открыть пак',`<p class="dialog-description">${e(err.message)}</p>`,btn('close-dialog','Понятно','primary'));}});
+let importingPack=false;
+async function openPackFile(file){
+ if(!file||importingPack)return;
+ if(!/\.siq$/i.test(file.name))return toast('Выберите файл пака в формате .siq');
+ if(file.size>250*1024*1024)return toast('Пак должен быть меньше 250 МБ');
+ importingPack=true;
+ try{const result=importSIQ(new Uint8Array(await file.arrayBuffer()));if(hasDraft&&!confirm(`Открыть «${result.pack.name}» вместо черновика «${pack.name}»? Для отдельной копии сначала скачайте текущий пак. Замену можно отменить в редакторе.`))return;for(const [id,blob]of result.media)await storage.putMedia(id,blob);await loadMedia();snapshot();pack=result.pack;for(const q of questions(pack))q.steps=ensureAnswerStep(q.steps);for(const [id,blob]of result.media)media.set(id,blob);select(pack.rounds[0],pack.rounds[0]?.themes[0],pack.rounds[0]?.themes[0]?.questions[0]);screen='editor';closeDialog();changed();toast('Пак открыт');}catch(err){dialog('Не удалось открыть пак',`<p class="dialog-description">${e(err.message)}</p>`,btn('close-dialog','Понятно','primary'));}finally{importingPack=false;}
+}
+$('#import-file').addEventListener('change',ev=>{const file=ev.target.files[0];ev.target.value='';openPackFile(file);});
+installWelcomeDrop({enabled:()=>screen==='home'&&!$('#dialog').open&&!importingPack,onFile:openPackFile,onError:toast});
 window.addEventListener('beforeunload',ev=>{if(!storageOK||saveRevision>savedRevision){ev.preventDefault();ev.returnValue='';}});
 async function loadMedia(){if(mediaLoaded)return;if(!storageOK&&!hasDraft){mediaLoaded=true;return;}try{media=await storage.getMedia();mediaLoaded=true;}catch{storageOK=false;toast('Не удалось загрузить медиа из браузера.');throw Error('Не удалось восстановить медиафайлы черновика.');}}
 function ensurePackAnswers(){let repaired=false;for(const q of questions(pack)){const next=ensureAnswerStep(q.steps);if(next!==q.steps){if(!repaired)snapshot();repaired=true;q.steps=next;}}return repaired;}
