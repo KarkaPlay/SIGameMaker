@@ -1,6 +1,7 @@
 import { copyFile, mkdir, readdir, readFile, rm } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { validateStylesheet } from './validate-styles.mjs';
 
 // Resolve paths relative to this script, regardless of the terminal's directory.
 const root = dirname(fileURLToPath(import.meta.url));
@@ -21,12 +22,15 @@ async function collect(directory, prefix = '') {
 
 try {
   const files = await collect(source);
-  for (const required of ['index.html', 'app.js', 'model.js', 'pricing.js', 'panel-motion.js', 'answer-list-motion.js', 'storage.js', 'siq.js', 'style.css', 'welcome.js', 'welcome.css', 'setup.js', 'editor.css', 'step-drag.js', 'preview-timer.js', 'scenario.js', 'vendor/fflate.js', 'vendor/fflate.LICENSE']) {
+  for (const required of ['index.html', 'app.js', 'model.js', 'pricing.js', 'panel-motion.js', 'answer-list-motion.js', 'media-library.js', 'library-loading.js', 'library-motion.js', 'storage.js', 'siq.js', 'import-report.js', 'import-review.js', 'import-motion.js', 'style.css', 'welcome.js', 'welcome.css', 'setup.js', 'editor.css', 'step-drag.js', 'preview-timer.js', 'scenario.js', 'vendor/fflate.js', 'vendor/fflate.LICENSE']) {
     if (!files.includes(join(...required.split('/')))) {
       throw new Error(`В исходниках отсутствует ${required}`);
     }
   }
   const html = await readFile(join(source, 'index.html'), 'utf8');
+  for (const file of files.filter(file => file.endsWith('.css'))) {
+    validateStylesheet(await readFile(join(source, file), 'utf8'), file);
+  }
   if (!html.includes('src="./app.js"') || !html.includes('href="./style.css"') || !html.includes('href="./welcome.css"') || !html.includes('href="./editor.css"')) {
     throw new Error('Проверьте подключения app.js, style.css, welcome.css и editor.css в index.html');
   }

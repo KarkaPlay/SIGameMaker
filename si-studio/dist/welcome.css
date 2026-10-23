@@ -99,3 +99,32 @@ html,body{min-width:1024px}
 .welcome-drop-overlay>div{display:flex;flex-direction:column;gap:12px;padding:24px}
 .welcome-drop-overlay strong{font-size:24px;font-weight:600;color:#315cdb}
 .welcome-drop-overlay span{font-size:16px;color:#6c7a91}
+
+/* Keep a complete import report readable even for large incompatible packs. */
+.import-problems{max-height:45dvh;overflow:auto;overscroll-behavior:contain;margin:18px 0;padding:0 12px 0 28px;font-size:14px;line-height:1.6;color:#4f607a}
+.import-problems li{padding:10px 0;border-bottom:1px solid #e8eaf0;overflow-wrap:anywhere}
+.import-problems strong{font-size:14px;font-weight:600;color:#334967}
+.import-problems p{margin-top:5px;white-space:pre-wrap}
+.import-problem-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.import-problem-actions>span{font-size:14px;color:#7a6980}
+.import-review-notice{font-size:14px;line-height:1.6;padding:12px 14px;margin-top:14px;background:#edf2fd;color:#435976;border-radius:9px}
+.import-problem-actions .import-repair-button{background:#315cdb;color:#fff;border:1px solid #315cdb}
+.import-problem-actions .import-clear-button{background:#fff5f4;border-color:#edc4bf;color:#a84036}
+.import-problem-actions .import-clear-button:hover:not(:disabled){background:#ffe8e5;border-color:#dca398}
+.import-review-notice.is-success{background:#eaf5ee;color:#2e6844;border:1px solid #bcdcc6}
+.import-review-notice.is-failure{background:#fff1ec;color:#9b4633;border:1px solid #efc9b9}
+.import-review-notice strong{font-size:16px;line-height:1.5}.import-review-notice p{margin-top:6px}
+.import-ready-description{margin:16px 0 10px}
+.import-review-dialog.is-import-transition{overflow:hidden}
+.import-review-body{min-height:0}
+.import-review-dialog .dialog-footer button{transition:transform .16s,background-color .16s,box-shadow .16s}
+.import-review-dialog button[aria-busy="true"]{display:inline-flex;align-items:center;gap:8px;opacity:1}
+.import-review-dialog button[aria-busy="true"]::before{content:"";width:13px;height:13px;flex-shrink:0;border:2px solid currentColor;border-right-color:transparent;border-radius:50%}
+@media(prefers-reduced-motion:no-preference){
+ .import-problem-actions button{transition:transform .16s,background-color .16s,border-color .16s}
+ .import-problem-actions button:hover:not(:disabled),.import-review-dialog .dialog-footer button:hover:not(:disabled){transform:translateY(-1px)}
+ .import-problem-actions button:active:not(:disabled),.import-review-dialog .dialog-footer button:active:not(:disabled){transform:scale(.97)}
+ .import-review-dialog button[aria-busy="true"]::before{animation:import-busy-spin .7s linear infinite}
+}
+@media(prefers-reduced-motion:reduce){.import-review-dialog button{transition:none!important;transform:none!important}}
+@keyframes import-busy-spin{to{transform:rotate(360deg)}}

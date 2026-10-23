@@ -1,11 +1,14 @@
 export const uid=()=>crypto.randomUUID();
 export const kinds={text:['Текст на экране','T'],image:['Изображение','▧'],audio:['Аудио','♫'],video:['Видео','▷'],answer:['Игроки отвечают','⌁']};
-export const questionTypes={simple:'Обычный вопрос',stake:'Вопрос-аукцион',bagcat:'Кот в мешке'};
+export const questionTypes={simple:'Обычный вопрос',stake:'Вопрос-аукцион',stakeAll:'Скрытые ставки всех игроков',bagcat:'Кот в мешке'};
 export const questionType=q=>q.type===undefined?'simple':q.type;
-export const answerLabel=(q,r)=>r?.type==='final'?'Финалисты отвечают':questionType(q)==='stake'?'Победитель аукциона отвечает':questionType(q)==='bagcat'?'Получатель кота отвечает':'Игроки отвечают';
+export const isAuction=q=>['stake','stakeAll'].includes(questionType(q));
+export const auctionLabel=q=>questionType(q)==='stakeAll'?'Скрытые ставки':'Аукцион';
+export const answerLabel=(q,r)=>r?.type==='final'?'Финалисты отвечают':questionType(q)==='stakeAll'?'Все игроки отвечают письменно':questionType(q)==='stake'?'Победитель аукциона отвечает':questionType(q)==='bagcat'?'Получатель кота отвечает':'Игроки отвечают';
 export const catSettings=q=>q.cat??{theme:'',selectionMode:'exceptCurrent',price:{minimum:0,maximum:0,step:0}};
 export function catSettingsError(cat){
  if(!cat||typeof cat.theme!=='string'||!['any','exceptCurrent'].includes(cat.selectionMode))return 'Проверьте тему и правило передачи кота';
+ if(cat.showBeforeTransfer!==undefined&&typeof cat.showBeforeTransfer!=='boolean')return 'Проверьте показ темы и стоимости до передачи';
  const p=cat.price;
  if(!p||!['minimum','maximum','step'].every(k=>Number.isInteger(p[k])&&p[k]>=0&&p[k]<=2147483647)||p.maximum<p.minimum||p.maximum===0&&p.minimum!==0||p.minimum<p.maximum&&p.step>0&&(p.step>p.maximum-p.minimum||(p.maximum-p.minimum)%p.step!==0))return 'Укажите корректную стоимость кота: минимум, максимум и шаг';
  return '';

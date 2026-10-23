@@ -16,7 +16,7 @@ try{
  const old=importSIQ(archive(legacy)),lq=old.pack.rounds[0].themes[0].questions[0];check(lq.type==='stake'&&lq.price===300&&lq.steps.map(s=>s.type).join(',')==='text,answer,text','SIQ 4 auction не перенесён');check(contentXML(old.pack).includes('type="stake"'),'SIQ 4 не обновлён');
  for(const type of ['simple','default','withButton']){const ordinary=importSIQ(archive(legacy.replace('name="auction"',`name="${type}"`)));check(ordinary.pack.rounds[0].themes[0].questions[0].type==='simple','Совместимость обычных вопросов');}
  const xml=contentXML(initial());
- const unsupported=[xml.replace('type="simple"','type="secretPublicPrice"'),xml.replace('type="simple"','type="stakeAll"'),xml.replace('<params>','<script/><params>'),xml.replace('<params>','<params><param name="custom">value</param>'),legacy.replace('<type name="auction"/>','<type name="auction"><param name="custom">value</param></type>')];
+ const unsupported=[xml.replace('type="simple"','type="secretNoQuestion"'),xml.replace('type="simple"','type="forAll"'),xml.replace('<params>','<script/><params>'),xml.replace('<params>','<params><param name="custom">value</param>'),legacy.replace('<type name="auction"/>','<type name="auction"><param name="custom">value</param></type>')];
  for(const fixture of unsupported){let failed=false;try{importSIQ(archive(fixture));}catch{failed=true;}check(failed,'Неподдерживаемая логика молча потеряна');}
  document.querySelector('#result').textContent='PASS: mixed SIQ 5, stake, nominal, timer, answers, metadata, all 6 binary media before/after, order, durations, wait; legacy SIQ 4 auction; ordinary aliases; unsupported types/scripts/parameters rejected.';
 }catch(e){document.querySelector('#result').textContent='FAIL: '+e.stack;}

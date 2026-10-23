@@ -20,3 +20,9 @@ test('invalid recipient and price rules block readiness and direct export; final
  for(const price of [{minimum:500,maximum:100,step:1},{minimum:100,maximum:500,step:300},{minimum:-1,maximum:500,step:1},{minimum:0,maximum:2147483648,step:1},{minimum:0.5,maximum:500,step:1}]){q.cat={theme:'Тема',selectionMode:'exceptCurrent',price};assert.ok(catSettingsError(q.cat));assert.ok(issues(p).length);assert.ok(questionChecklist(q,p.rounds[0]).some(c=>!c.passed));assert.throws(()=>contentXML(p),/стоимость кота/);}
  q.cat={...catSettings({}),selectionMode:'nobody'};assert.throws(()=>contentXML(p),/правило передачи/);delete q.cat;p.rounds[0].themes.forEach(t=>t.questions=t.questions.slice(0,1));p.rounds[0].type='final';assert.throws(()=>contentXML(p),/скрытые ставки/);
 });
+test('public visibility exports the native type with no extra SIQ parameter and passes XSD',()=>{
+ const p=initial(),q=p.rounds[0].themes[0].questions[0];q.type='bagcat';q.cat={...catSettings(q),showBeforeTransfer:true};
+ assert.deepEqual(issues(p),[]);const xml=contentXML(p);assert.match(xml,/<question price="100" type="secretPublicPrice">/);assert.doesNotMatch(xml,/<param name="showBeforeTransfer"/);
+ const dir=mkdtempSync(join(tmpdir(),'si-public-cat-'));writeFileSync(join(dir,'cat.xml'),xml);execFileSync('xmllint',['--noout','--schema','docs/siq_5.xsd',join(dir,'cat.xml')]);
+ for(const value of ['true','false',1,null]){q.cat.showBeforeTransfer=value;assert.ok(catSettingsError(q.cat));assert.throws(()=>contentXML(p),/до передачи/);}
+});
