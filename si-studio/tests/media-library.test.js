@@ -44,3 +44,10 @@ test('grouping preserves pack order and every usage without duplicating files wi
  assert.deepEqual(themes.map(group=>group.items.map(item=>item.id)),[['shared','a'],['b'],['shared','c']]);
  assert.equal(new Set(themes.map(group=>group.key)).size,3);
 });
+
+test('usage details retain every question and step even when a file repeats within a theme',()=>{
+ const pack={rounds:[{id:'r',name:'Раунд',themes:[{id:'t',name:'Тема',questions:[{id:'q1',price:100,steps:[{id:'s1',type:'image',mediaId:'x'},{id:'s2',type:'image',mediaId:'x'}]},{id:'q2',price:200,steps:[{id:'s3',type:'image',mediaId:'x'}]}]}]}]};
+ const [item]=collectLibraryMedia(pack);assert.equal(item.locations.length,1);
+ assert.deepEqual(item.locations[0].uses.map(use=>[use.roundId,use.themeId,use.questionId,use.stepId,use.questionNumber,use.stepNumber,use.price]),[['r','t','q1','s1',1,1,100],['r','t','q1','s2',1,2,100],['r','t','q2','s3',2,1,200]]);
+ assert.equal(groupLibraryMedia([item],'theme')[0].items.length,1);
+});

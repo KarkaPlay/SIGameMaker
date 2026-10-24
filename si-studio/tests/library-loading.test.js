@@ -74,3 +74,23 @@ test('changing gallery selection unloads the old preview and keeps the visible f
  f.observer.visible(old);assert.equal(old.attrs.has('src'),false);
  f.observer.visible(next);assert.equal(next.attrs.has('src'),true);f.dispose();assert.equal(f.revoked.length,3);
 });
+
+test('images appear only after decoding; late readiness cannot revive an unloaded image',async()=>{
+ const image=element('photo','IMG');let resolveDecode,cancels=0;
+ image.decode=()=>new Promise(resolve=>{resolveDecode=resolve;});image.animate=()=>({cancel(){cancels++;}});
+ const f=fixture([image]);f.observer.visible(image);assert.equal(image.attrs.has('data-library-ready'),false);
+ image.emit('load');await Promise.resolve();assert.equal(image.attrs.has('data-library-ready'),false);
+ resolveDecode();await new Promise(resolve=>setImmediate(resolve));assert.equal(image.attrs.get('data-library-ready'),'true');
+ f.observer.visible(image,false);assert.equal(image.attrs.has('data-library-ready'),false);assert.equal(cancels,1);
+ f.observer.visible(image);image.emit('load');await Promise.resolve();f.dispose();resolveDecode();await new Promise(resolve=>setImmediate(resolve));assert.equal(image.attrs.has('data-library-ready'),false);
+});
+
+test('reordering retained cards preserves loaded sources, readiness and URL leases',()=>{
+ const a=element('a','IMG'),b=element('b','IMG'),elements=[a,b],f=fixture(elements);
+ f.observer.visible(a);f.observer.visible(b);a.emit('load');b.emit('load');
+ const urls=elements.map(el=>el.attrs.get('src'));
+ elements.reverse();f.dispose.refresh();
+ assert.equal(a.attrs.get('src'),urls[0]);assert.equal(b.attrs.get('src'),urls[1]);
+ assert.equal(a.attrs.get('data-library-ready'),'true');assert.equal(b.attrs.get('data-library-ready'),'true');
+ assert.equal(f.created.length,2);assert.equal(f.revoked.length,0);f.dispose();
+});

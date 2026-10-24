@@ -10,7 +10,7 @@ export function installLibraryLoading(root,{blob,Observer=globalThis.Intersectio
  function unload(element){
   const state=loaded.get(element);if(!state)return;
   element.removeEventListener('loadedmetadata',state.metadata);element.removeEventListener('loadeddata',state.frame);
-  element.removeEventListener('error',state.error);
+  element.removeEventListener('error',state.error);element.removeEventListener('load',state.ready);element.removeEventListener('loadedmetadata',state.ready);state.arrival?.cancel();element.removeAttribute('data-library-ready');element.closest('.library-file,.library-audio-row')?.classList?.remove('is-media-ready');
   if(element.tagName!=='IMG')element.pause();
   element.removeAttribute('src');if(element.tagName!=='IMG')element.load();
   element.closest('.library-thumbnail-image')?.classList.remove('has-frame','has-error');
@@ -18,15 +18,20 @@ export function installLibraryLoading(root,{blob,Observer=globalThis.Intersectio
  }
  function load(element){
   if(loaded.has(element)||!root.contains(element))return;
-  const id=element.dataset.librarySource,src=acquire(id);if(!src)return;
+  const id=element.dataset.librarySource,src=acquire(id);if(!src){element.setAttribute('data-library-ready','true');element.setAttribute('title','Файл недоступен');element.closest('.library-file,.library-audio-row')?.classList?.add('is-media-ready');return;}
   const thumbnail=element.hasAttribute('data-library-poster'),decode=thumbnail||element.hasAttribute('data-library-video-preview');
   const metadata=()=>{
    // Seeking decodes a frame even on browsers that do not paint metadata-only video.
    if(decode&&element.paused&&Number.isFinite(element.duration)&&element.duration>0)element.currentTime=Math.min(.08,element.duration/2);
   };
-  const frame=()=>{if(decode){if(thumbnail)element.pause();element.preload='metadata';element.closest('.library-thumbnail-image')?.classList.add('has-frame');}};
-  const error=()=>{const tile=element.closest('.library-thumbnail-image');tile?.classList.add('has-error');const status=tile?.querySelector('.library-poster-status');if(status)status.textContent='Нет превью';};
-  loaded.set(element,{id,metadata,frame,error});
+  const ready=()=>{
+   const state=loaded.get(element);if(disposed||!state||state.readyDone||state.readyPending)return;state.readyPending=true;
+   const reveal=()=>{if(disposed||loaded.get(element)!==state)return;state.readyDone=true;element.setAttribute('data-library-ready','true');element.closest('.library-file,.library-audio-row')?.classList?.add('is-media-ready');if(element.animate&&!globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches)state.arrival=element.animate([{opacity:0},{opacity:1}],{duration:320,easing:'ease-out'});};
+   if(element.tagName==='IMG'&&element.decode)Promise.resolve().then(()=>element.decode()).catch(()=>{}).then(reveal);else reveal();
+  };
+  const frame=()=>{ready();if(decode){if(thumbnail)element.pause();element.preload='metadata';element.closest('.library-thumbnail-image')?.classList.add('has-frame');}};
+  const error=()=>{ready();const tile=element.closest('.library-thumbnail-image');tile?.classList.add('has-error');const status=tile?.querySelector('.library-poster-status');if(status)status.textContent='Нет превью';};
+  loaded.set(element,{id,metadata,frame,error,ready});element.addEventListener('load',ready);if(element.tagName==='AUDIO')element.addEventListener('loadedmetadata',ready);
   element.addEventListener('loadedmetadata',metadata);element.addEventListener('loadeddata',frame);element.addEventListener('error',error);
   if(element.tagName!=='IMG')element.preload=decode?'auto':'metadata';
   element.setAttribute('src',src);if(element.tagName!=='IMG')element.load();

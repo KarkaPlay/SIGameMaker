@@ -42,7 +42,12 @@ export function createImportMotion({reduceMotion=()=>matchMedia('(prefers-reduce
  }
  async function revealEditor(root){
   if(!root)return;const state=begin(root);
-  if(!reduceMotion()){animate(state,root,[{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}]);await wait(state);}
+  if(!reduceMotion()){
+   animate(state,root,[{opacity:0,transform:'translateY(18px) scale(.985)'},{opacity:1,transform:'none'}],{duration:520,easing:'cubic-bezier(.16,1,.3,1)'});
+   for(const [selector,x,y,delay] of [['.studio-header',0,-16,40],['.studio-round-bar',0,-8,100],['.studio-board-pane',-24,12,100],['.studio-question-pane',24,12,180]])for(const node of nodes(root,selector))animate(state,node,[{opacity:0,transform:`translate(${x}px,${y}px)`},{opacity:1,transform:'none'}],{duration:580,delay,fill:'backwards',easing:'cubic-bezier(.16,1,.3,1)'});
+   nodes(root,'.studio-board-row,.studio-final-theme').slice(0,12).forEach((node,index)=>animate(state,node,[{opacity:0,transform:'translateY(10px)'},{opacity:1,transform:'none'}],{duration:420,delay:160+index*22,fill:'backwards'}));
+   await wait(state);
+  }
   finish(root,state);
  }
  return {enter,update,stop,revealEditor};
