@@ -4,3 +4,6 @@ export function getDraft(){return new Promise((resolve,reject)=>{const r=db.tran
 export function saveDraft(pack){return new Promise((resolve,reject)=>{const tx=db.transaction('draft','readwrite');tx.objectStore('draft').put(pack,'current');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
 export function putMedia(id,blob){return new Promise((resolve,reject)=>{const tx=db.transaction('media','readwrite');tx.objectStore('media').put(blob,id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
 export function getMedia(){return new Promise((resolve,reject)=>{const tx=db.transaction('media');const s=tx.objectStore('media');const keys=s.getAllKeys(),values=s.getAll();tx.oncomplete=()=>resolve(new Map(keys.result.map((k,i)=>[k,values.result[i]])));tx.onerror=()=>reject(tx.error);});}
+// Independent workspace: merging must never replace the current editor draft.
+export function getMergeDraft(){return new Promise((resolve,reject)=>{const r=db.transaction('draft').objectStore('draft').get('merge');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+export function saveMergeDraft(value){return new Promise((resolve,reject)=>{const tx=db.transaction('draft','readwrite');tx.objectStore('draft').put(value,'merge');tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
