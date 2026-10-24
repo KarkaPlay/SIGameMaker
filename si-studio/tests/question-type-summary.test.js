@@ -34,8 +34,8 @@ test('cat summary updates live for theme, recipient, disclosure and price using 
 });
 test('settings action precedes the heading and auction mode is not repeated in its details',()=>{
  const {context,q}=editor();
- const cat=context.questionTypeHTML(q);assert.ok(cat.indexOf('data-action="cat-settings"')<cat.indexOf('<h3>Параметры кота'));
- q.type='stake';const auction=context.questionTypeHTML(q);assert.ok(auction.indexOf('data-action="auction-settings"')<auction.indexOf('<h3>Параметры аукциона'));
+ const cat=context.questionTypeHTML(q);assert.match(cat,/data-action="cat-settings"/);assert.ok(!cat.includes('Параметры кота'));
+ q.type='stake';const auction=context.questionTypeHTML(q);assert.match(auction,/data-action="auction-settings"/);assert.ok(!auction.includes('Параметры аукциона'));
  assert.equal((auction.match(/Открытые торги/g)||[]).length,1);
  q.type='stakeAll';assert.equal((context.questionTypeHTML(q).match(/Скрытые ставки всех игроков/g)||[]).length,1);
 });

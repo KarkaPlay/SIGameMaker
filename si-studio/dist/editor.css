@@ -478,3 +478,122 @@ dialog.studio-media-dialog{width:min(1120px,calc(100vw - 64px));height:min(760px
 textarea.studio-step-text{height:36px;min-height:36px;padding:5px 9px}
 .studio-question-content{overflow-anchor:none}
 @media(prefers-reduced-motion:reduce){.library-file,.library-audio-row,#correct-answer,textarea.studio-step-text{transition:none}}
+
+.studio-step-editor textarea.studio-step-text{height:36px;min-height:36px;max-height:320px;padding:5px 9px;resize:none}
+.studio-mode-panel>header>button{font-weight:600}
+dialog.studio-demo-dialog{width:min(980px,calc(100vw - 64px));max-height:calc(100dvh - 40px);padding:18px 24px;overflow:auto}
+.studio-demo-dialog>.dialog-heading{margin-bottom:10px}
+.studio-demo-dialog .full-preview{display:flex;flex-direction:column;gap:10px;min-width:0}
+.studio-demo-dialog .game-screen{aspect-ratio:auto;flex:none;min-height:240px}
+.studio-demo-dialog .screen-content{min-height:150px;max-height:230px;overflow:auto;padding:16px 24px}
+.studio-demo-dialog .screen-text{font-size:26px;max-height:none}
+.studio-demo-dialog .screen-content>img,.studio-demo-dialog .screen-content>video{max-height:200px;object-fit:contain}
+.studio-demo-dialog .screen-header{padding:10px 16px}
+.studio-demo-dialog .screen-brand{padding:8px 16px}
+.demo-disclaimer{font-size:14px;color:#7c899b;margin:0}
+.demo-stage{text-align:center;color:#fff;max-width:700px;margin:auto}
+.demo-stage h3{font-size:26px;line-height:1.3;margin:0 0 12px}
+.demo-stage p{font-size:18px;line-height:1.6;margin:0}
+.demo-players{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.demo-player{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:6px 10px;align-items:center;padding:12px;border:1px solid #dfe6f0;border-radius:10px;background:#f7f9fc;color:#536883;min-width:0}
+.demo-player.is-active{border-color:#6e99ea;background:#edf3ff;box-shadow:0 0 0 2px #315cdb0d}
+.demo-avatar{grid-row:1/3;width:24px;height:28px;color:#7590b7}
+.demo-avatar svg{width:24px;height:28px}
+.demo-player strong,.demo-player b{font-size:14px;font-weight:600}
+.demo-player b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.demo-player small{grid-column:2/-1;font-size:14px;line-height:1.4;overflow-wrap:anywhere}
+.demo-comment{font-size:14px;line-height:1.5;color:#596f90;margin:0;min-height:21px}
+.studio-demo-dialog .preview-control{margin-top:0;flex:none}
+.studio-demo-dialog .preview-restart{margin-top:0}
+.studio-step-editor textarea.studio-step-text{line-height:1.4}
+.demo-action-symbol{width:38px;height:38px;margin:0 auto 8px;font-size:32px;font-weight:700;line-height:38px;color:#f2d18b}
+.demo-action-symbol svg{width:38px;height:38px}
+.demo-transfer{display:flex;align-items:center;justify-content:center;gap:20px;font-size:18px;margin:0 0 10px;color:#f2d18b}
+
+/* Game scene and a dedicated, independently scrolling stage rail. */
+dialog.studio-demo-dialog{width:min(1360px,calc(100vw - 32px));height:calc(100dvh - 24px);max-height:calc(100dvh - 24px);padding:16px 20px;overflow:hidden}
+.studio-demo-dialog[open]{display:flex;flex-direction:column}
+.studio-demo-dialog>.dialog-heading{flex:none;margin-bottom:12px}
+.demo-layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;flex:1;min-height:0;min-width:0}
+.demo-play-area{display:grid;grid-template-rows:minmax(0,1fr) 160px;gap:12px;min-height:0;min-width:0}
+.studio-demo-dialog .demo-play-area .game-screen{display:flex;flex-direction:column;min-height:0;height:100%;margin:0;aspect-ratio:auto}
+.studio-demo-dialog .demo-play-area .screen-content{flex:1;min-height:0;max-height:none;overflow:auto;padding:20px 28px}
+.studio-demo-dialog .demo-play-area .screen-content>img,.studio-demo-dialog .demo-play-area .screen-content>video{max-height:100%;min-height:0;width:100%;object-fit:contain}
+.studio-demo-dialog .screen-header,.studio-demo-dialog .screen-brand{flex:none}
+.studio-demo-dialog .demo-play-area .screen-text{font-size:28px;line-height:1.4;max-height:none}
+.demo-sidebar{display:flex;flex-direction:column;gap:14px;min-height:0;min-width:0;border-left:1px solid #e2e8f1;padding-left:20px}
+.demo-sidebar>h3{font-size:16px;margin:0;color:#526681}
+.demo-sidebar>ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;overflow:auto;scrollbar-width:thin}
+.demo-sidebar>ol{position:relative;padding:3px}
+.demo-sidebar li{display:block;flex:none;min-width:0}
+.demo-stage-event{min-height:65px}
+.demo-stage-event .studio-event-trigger{cursor:default}
+.demo-stage-event .studio-step-label{line-height:1.4;overflow-wrap:anywhere}
+.demo-stage-event .studio-step-symbol svg{width:20px;height:20px}
+.demo-stage-event .studio-step-number{font-size:14px}
+.studio-type-board{--step-fill:#edf4ff;--step-border:#cbdcf4;--step-ink:#49668f}
+.studio-type-stake{--step-fill:#fff2df;--step-border:#efdab4;--step-ink:#8c6c38}
+.studio-type-bagcat{--step-fill:#f2edfc;--step-border:#ded0f0;--step-ink:#775b96}
+@media(prefers-reduced-motion:no-preference){.demo-stage-event{transition:background-color .22s ease,border-color .22s ease,box-shadow .22s ease}}
+.demo-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none;border-top:1px solid #e2e8f1;padding-top:14px}
+.demo-controls button{font-size:14px;padding:10px 8px}
+.demo-controls button:last-child{grid-column:1/-1}
+.studio-demo-dialog .demo-players{display:flex;align-items:flex-end;justify-content:space-evenly;gap:20px;padding-top:24px;min-height:0}
+.studio-demo-dialog .demo-player{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;flex:0 1 180px;min-width:0;padding:0;border:0;box-shadow:none;background:transparent;color:#34445d}
+.studio-demo-dialog .demo-avatar{display:grid;place-items:center;width:82px;height:82px;background:#e6ecf5;border:2px solid #cdd8e9;border-radius:3px;grid-row:auto;color:#8498b5}
+.studio-demo-dialog .demo-avatar svg{width:56px;height:56px}
+.studio-demo-dialog .demo-player.is-active .demo-avatar{border-color:#e4b64b;box-shadow:0 0 0 3px #e4b64b24}
+.studio-demo-dialog .demo-player strong{font-size:16px;font-weight:600;line-height:1.3}
+.studio-demo-dialog .demo-player [data-demo-score]{font-size:20px;line-height:1.3;font-weight:700;color:#315cdb;font-variant-numeric:tabular-nums}
+.demo-bubble-slot{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:220px;max-width:26vw;display:flex;justify-content:center;pointer-events:none;z-index:2}
+.demo-bubble{position:relative;max-width:100%;padding:10px 14px;border-radius:10px;border:1px solid #d8e2f1;background:#fff;color:#344b6d;box-shadow:0 5px 22px #243d6720;text-align:center;font-size:14px;line-height:1.4;overflow-wrap:anywhere;max-height:100px;overflow:auto}
+.demo-bubble b{display:block;font-size:16px;margin-top:3px}
+.demo-bubble.correct{background:#e7f6ec;border-color:#8dcca1;color:#2d7746}
+.demo-bubble.wrong{background:#fff0ed;border-color:#e2a89c;color:#a34a3d}
+.preview-time-frame rect{transition:stroke-dashoffset .04s linear}
+.preview-time-frame.is-paused rect{stroke:#e8edf7}
+.studio-demo-dialog #preview-countdown{font-size:16px}
+@media(prefers-reduced-motion:reduce){.preview-time-frame rect{transition:none}}
+
+/* Answer disclosure is an explicit choice; the standard event has no move/delete controls. */
+.studio-reveal-mode{display:flex;gap:4px;padding:4px;background:#edf1f6;border-radius:10px;margin:12px 0 8px}
+.studio-reveal-mode button{flex:1;min-width:0;font-size:14px;padding:10px 8px;border:0;border-radius:7px;background:transparent;color:#53647d}
+.studio-reveal-mode button[aria-pressed="true"]{background:#fff;color:#2455c2;box-shadow:0 1px 4px #213b5c16}
+.studio-image-caption{display:flex;flex-direction:column;gap:8px;margin-top:16px;font-size:14px}
+.studio-image-caption textarea{font-size:16px;line-height:1.4;resize:vertical;min-height:76px}
+.studio-image-caption>span{font-size:14px;line-height:1.4;color:#68778b}
+.preview-captioned-image{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;min-height:0;max-height:100%}
+.preview-captioned-image img{min-height:0;max-height:100%;object-fit:contain;flex:1;width:100%}
+.preview-captioned-image figcaption{flex:none;font-size:24px;line-height:1.4;white-space:pre-wrap;overflow-wrap:anywhere}
+.studio-reveal-content{position:relative;margin-top:12px}
+.studio-standard-reveal>.studio-step-handle{visibility:hidden}
+.studio-standard-reveal .studio-event-trigger{cursor:default}
+
+/* Schematic selection and return use the same fixed cell, without interactive question controls. */
+.demo-board{display:flex;flex-direction:column;gap:8px;width:100%;max-width:800px;margin:auto;min-height:0}
+.demo-board-row{display:grid;grid-template-columns:minmax(85px,1.5fr) repeat(5,minmax(0,1fr));gap:8px;min-height:48px}
+.demo-board-theme,.demo-board-cell{display:flex;align-items:center;justify-content:center;border:1px solid #a4bcf340;border-radius:5px;background:#ffffff09;min-width:0}
+.demo-board-theme{font-size:14px;line-height:1.4;color:#e7edff;padding:8px}
+.demo-board-cell{font-size:24px;font-weight:600;color:#f2d18b;font-variant-numeric:tabular-nums}
+.demo-board-cell.is-selected{background:#f2d18b;color:#153b9a;border-color:#ffe7a0;box-shadow:0 0 0 3px #f2d18b40}
+.demo-board-cell.is-played{color:#a6bdf055;background:#ffffff03;border-color:#a4bcf31c}
+.demo-board-cell.is-played>span{font-size:14px}
+@media(prefers-reduced-motion:no-preference){.demo-board-cell{transition:background-color .25s ease,color .25s ease,border-color .25s ease,box-shadow .25s ease}.demo-board-cell.is-selected{animation:demo-board-choice .65s ease-out}@keyframes demo-board-choice{0%{transform:scale(1)}45%{transform:scale(1.06)}100%{transform:scale(1)}}}
+
+/* Progress is a quiet timeline; only the current event gets a strong colored card. */
+.demo-sidebar li{position:relative;display:grid;grid-template-columns:26px minmax(0,1fr);align-items:center;gap:9px}
+.demo-sidebar li:not(:last-child):before{content:"";position:absolute;left:12px;top:calc(50% + 13px);height:calc(50% + 8px);width:2px;background:#e1e7ef;pointer-events:none}
+.demo-stage-position{position:relative;z-index:1;display:grid;place-items:center;width:26px;height:26px;border:1px solid #d9e2ef;border-radius:50%;background:#fff}
+.demo-stage-position .studio-step-number{color:#8392a9;font-size:14px;line-height:1;font-variant-numeric:tabular-nums}
+.demo-sidebar .demo-stage-event{background:#fff;border-color:#e2e8f1;box-shadow:none}
+.demo-sidebar .demo-stage-event .studio-event-summary{white-space:nowrap;overflow:hidden;text-overflow:clip;min-width:0;color:#718199}
+.demo-sidebar li.is-upcoming .studio-step-label{color:#63758e}
+.demo-sidebar li.is-complete .demo-stage-position{border-color:#bad5c6;background:#edf6f0}
+.demo-sidebar li.is-complete .studio-step-number{color:#407a59;font-weight:650}
+.demo-sidebar li.is-complete .studio-step-label{color:#718198}
+.demo-sidebar li[aria-current="step"] .demo-stage-position{background:#315cdb;border-color:#315cdb;box-shadow:0 0 0 3px #315cdb14}
+.demo-sidebar li[aria-current="step"] .studio-step-number{color:#fff;font-weight:650}
+.demo-sidebar li[aria-current="step"] .demo-stage-event{background:var(--step-fill);border-color:#547ddd;box-shadow:0 0 0 2px #315cdb18,0 3px 10px #315cdb0c}
+.demo-sidebar li[aria-current="step"] .studio-step-label{color:#234e94;font-weight:650}
+.demo-sidebar li[aria-current="step"] .studio-event-summary{color:#4e6689}
+@media(prefers-reduced-motion:no-preference){.demo-stage-position{transition:background-color .22s ease,border-color .22s ease,box-shadow .22s ease}}

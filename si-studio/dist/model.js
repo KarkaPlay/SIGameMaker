@@ -13,6 +13,12 @@ export function catSettingsError(cat){
  if(!p||!['minimum','maximum','step'].every(k=>Number.isInteger(p[k])&&p[k]>=0&&p[k]<=2147483647)||p.maximum<p.minimum||p.maximum===0&&p.minimum!==0||p.minimum<p.maximum&&p.step>0&&(p.step>p.maximum-p.minimum||(p.maximum-p.minimum)%p.step!==0))return 'Укажите корректную стоимость кота: минимум, максимум и шаг';
  return '';
 }
+export const customRevealError=q=>q.revealMode==='custom'&&!q.steps.slice(q.steps.findIndex(st=>st.type==='answer')+1).some(st=>st.type!=='answer')?'Добавьте события после ответа игроков или переключитесь на стандартное поведение':'';
+export function stepSummary(st){
+ if(st.type==='text')return String(st.value||'').trim().replace(/\s+/g,' ')||'Добавьте текст';
+ if(st.type==='answer')return st.duration?`${st.duration} сек на ответ`:'Время по настройкам игры';
+ return (st.filename||'Файл ещё не выбран')+(st.type==='image'&&st.caption?.trim()?' · '+st.caption.trim().replace(/\s+/g,' '):'');
+}
 export const canAddQuestion=(r,t)=>r?.type!=='final'||t.questions.length===0;
 export function finalRoundError(r){
  if(r.themes.some(t=>t.questions.length!==1))return 'В финале в каждой теме должен быть ровно один вопрос. Сначала измените состав тем или создайте отдельный раунд для финала.';
@@ -36,6 +42,7 @@ export function questionReadiness(q,r,media=new Map()){
  const eventErrors=[];
  for(const [i,s]of q.steps.entries()){
   if(!Number.isInteger(s.duration)||s.duration<0||s.duration>35999)eventErrors.push({message:'некорректная длительность шага',stepId:s.id,field:'duration',detail:`Событие ${i+1}: задайте время от 0 до 35999 сек`});
+  if(s.type==='image'&&s.caption?.trim()&&s.duration===1)eventErrors.push({message:'для изображения с подписью нужно не менее 2 сек',stepId:s.id,field:'duration',detail:`Событие ${i+1}: задайте от 2 сек или время по настройкам игры`});
   if(s.type==='text'&&!s.value.trim())eventErrors.push({message:'пустой текстовый шаг',stepId:s.id,field:'value',detail:`Событие ${i+1}: добавьте текст`});
   if(['image','audio','video'].includes(s.type)&&!media.has(s.mediaId))eventErrors.push({message:'не загружен медиафайл',stepId:s.id,field:'media',detail:`Событие ${i+1}: загрузите файл`});
  }
@@ -49,12 +56,13 @@ export function questionReadiness(q,r,media=new Map()){
   check('answer-event','Добавлено одно событие ответа игроков',answerErrors),
   check('answer','Указан правильный ответ',q.answer.trim()?[]:[{message:'нет правильного ответа',detail:'Заполните поле «Правильный ответ»'}]),
   check('events','Все события заполнены, файлы загружены',eventErrors),
+  check('reveal','Настроено раскрытие ответа',customRevealError(q)?[{message:customRevealError(q),detail:customRevealError(q)}]:[]),
   check('type','Выбран подходящий тип вопроса',typeErrors),
   ...(r.type==='final'?[]:[check('price','Стоимость — целое неотрицательное число',Number.isInteger(q.price)&&q.price>=0?[]:[{message:'некорректная стоимость',detail:'Укажите целую стоимость от 0'}])])
  ];
 }
 export function questionChecklist(q,r,media=new Map()){
- return questionReadiness(q,r,media).filter(check=>['content','answer','events'].includes(check.id)||check.id==='type'&&!check.passed).flatMap(check=>check.passed?[{label:check.label,passed:true}]:check.errors.map(error=>({label:error.detail,passed:false,target:check.id,stepId:error.stepId,field:error.field})));
+ return questionReadiness(q,r,media).filter(check=>['content','answer','events'].includes(check.id)||['type','reveal'].includes(check.id)&&!check.passed).flatMap(check=>check.passed?[{label:check.label,passed:true}]:check.errors.map(error=>({label:error.detail,passed:false,target:check.id,stepId:error.stepId,field:error.field})));
 }
 export function issues(p,media=new Map()){
  const errors=[];

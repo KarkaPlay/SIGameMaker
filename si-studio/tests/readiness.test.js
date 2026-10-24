@@ -41,3 +41,20 @@ test('compact checklist uses action text per error and targets stable event IDs'
  const complete=questionChecklist(q,r,media);assert.equal(complete.length,3);assert.ok(complete.every(row=>row.passed));
  assert.equal(complete.some(row=>/Стоимость|тип вопроса|одно событие/.test(row.label)),false);
 });
+
+
+test('empty custom disclosure appears in readiness, checklist and package issues until filled or switched to standard',async()=>{
+ const {setRevealMode}=await import('../dist/scenario.js'),{questionChecklist}=await import('../dist/model.js');
+ for(const roundType of ['standard','final']){
+  const {p,r,q}=fixture();r.type=roundType;
+  setRevealMode(q,'custom');assert.deepEqual(failed(q,r),['reveal']);
+  const row=questionChecklist(q,r).find(row=>row.target==='reveal');
+  assert.equal(row.passed,false);assert.match(row.label,/Добавьте события.*стандартное поведение/);
+  assert.ok(issues(p).some(issue=>issue.question===q.id&&issue.message.endsWith(row.label)));
+  q.steps.push(step('text','Раскрытие'));assert.deepEqual(failed(q,r),[]);
+  assert.equal(questionChecklist(q,r).some(row=>row.target==='reveal'),false);
+  q.steps.pop();assert.deepEqual(failed(q,r),['reveal']);
+  setRevealMode(q,'standard');assert.deepEqual(failed(q,r),[]);
+  setRevealMode(q,'custom');assert.deepEqual(failed(q,r),['reveal']);
+ }
+});
