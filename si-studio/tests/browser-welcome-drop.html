@@ -27,6 +27,8 @@ try{
  fire('drop',[file,file]);check(d.body.textContent.includes('один файл .siq'),'Нет ошибки нескольких файлов');
  fire('drop',[new w.File(['broken'],'broken.siq')]);await until(()=>d.querySelector('#dialog').open);check(d.querySelector('.welcome-page'),'Ошибка открыла редактор');d.querySelector('[data-action="close-dialog"]').click();await until(()=>!d.querySelector('#dialog').open);
  fire('drop',[file]);await until(()=>d.querySelector('.studio-shell'));check(d.querySelector('.studio-pack-name').textContent==='Хороший вечер','Не открыт импортированный пак');
+ // Import stays busy until the editor transition completes; do not race a second drop against it.
+ await until(()=>d.querySelector('#toast').textContent.includes('Пак открыт'));
  d.querySelector('[data-action="home"]').click();await until(()=>d.querySelector('.welcome-open'));let confirmations=0;w.confirm=()=>{confirmations++;return false;};fire('drop',[file]);await until(()=>confirmations===1);check(d.querySelector('.welcome-recent'),'Отмена замены потеряла черновик');
  result.textContent='PASS: 1280×720 и 1440×900 без прокрутки; подсветка, вложенные элементы, отмена, перенос текста, неверное расширение, несколько файлов, повреждённый архив, .SIQ → редактор, отмена замены черновика. События переноса синтетические; перенос из Finder вручную не проверен.';
 }catch(err){result.textContent='FAIL: '+err.stack;}
