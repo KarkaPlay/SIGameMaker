@@ -73,6 +73,23 @@
 }
 @media(prefers-reduced-motion:reduce){.at-editor *{scroll-behavior:auto!important}}
 
+/* Round sorting keeps the workspace intact and reserves the moving tab's full width. */
+.studio-round-tabs{overscroll-behavior-x:contain;scroll-behavior:auto}
+.studio-round-handle{display:grid;place-items:center;flex:0 0 24px;width:24px;min-height:34px;padding:0;margin-left:3px;border:0;border-radius:5px;background:transparent;color:#9aabc1;font-size:18px;cursor:grab;touch-action:none;user-select:none}
+.studio-round-handle:hover,.studio-round-handle:focus-visible{background:#eaf0fb;color:#315cdb}
+.studio-round-handle:focus-visible{outline:2px solid #7095e9;outline-offset:-2px}
+.studio-round-handle:disabled{opacity:.3;cursor:default}
+.studio-round-item:has(.studio-round-handle) .studio-round-tab{max-width:218px}
+.studio-round-item.is-round-placeholder{background:#e8effc!important;border:1px dashed #7c9de0!important;box-shadow:inset 0 0 0 1px #315cdb08!important}
+.studio-round-item.is-round-placeholder>*{opacity:0}
+.is-round-dragging,.is-round-dragging *{cursor:grabbing!important;user-select:none!important}
+.studio-round-ghost{position:fixed;z-index:1200;margin:0;pointer-events:none;background:#fff;border-color:#87a5e4;box-shadow:0 8px 24px #294c8a26,0 2px 6px #294c8a18;max-width:300px;will-change:left,top}
+.studio-round-ghost.is-outside{opacity:.5}
+.studio-round-drop-line{position:fixed;z-index:1199;width:3px;border-radius:3px;background:#477be1;box-shadow:0 0 0 3px #477be115;pointer-events:none}
+.studio-round-drop-line::before,.studio-round-drop-line::after{content:"";position:absolute;left:-2px;width:7px;height:7px;border-radius:50%;background:inherit}
+.studio-round-drop-line::before{top:-2px}.studio-round-drop-line::after{bottom:-2px}
+@media(prefers-reduced-motion:no-preference){.studio-round-handle{transition:background-color .18s ease,color .18s ease}.studio-round-ghost{transition:box-shadow .18s ease,opacity .18s ease}}
+
 .studio-question-type{display:grid;grid-template-columns:auto minmax(180px,240px);align-items:center;gap:10px 18px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #e4eaf2}.studio-question-type label{font-size:14px;font-weight:600;color:#435976}.studio-question-type select{width:100%;min-height:40px;font:inherit;font-size:14px;background:#fff;border:1px solid #cbd6e5;border-radius:9px;padding:8px 12px;color:#344c70}.studio-question-type p{grid-column:1/-1;margin:0;font-size:14px;line-height:1.5;color:#62748c}
 .studio-coming-soon:disabled{opacity:.72;cursor:not-allowed;color:#8796aa;background:#f7f9fc;border-color:#e5eaf1}
 
@@ -597,3 +614,9 @@ dialog.studio-demo-dialog{width:min(1360px,calc(100vw - 32px));height:calc(100dv
 .demo-sidebar li[aria-current="step"] .studio-step-label{color:#234e94;font-weight:650}
 .demo-sidebar li[aria-current="step"] .studio-event-summary{color:#4e6689}
 @media(prefers-reduced-motion:no-preference){.demo-stage-position{transition:background-color .22s ease,border-color .22s ease,box-shadow .22s ease}}
+
+/* Only the interlude exposes a shared nominal price; ordinary multipliers stay separate. */
+.studio-interlude-pricing{display:flex;flex-direction:column;gap:10px;border:0;padding:0;margin:0;min-width:0}
+.studio-interlude-pricing[hidden]{display:none}
+.studio-interlude-pricing p{font-size:14px;line-height:1.5;color:#8190a5}
+.studio-interlude-pricing label{margin-bottom:0}

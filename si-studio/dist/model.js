@@ -19,6 +19,13 @@ export function stepSummary(st){
  if(st.type==='answer')return st.duration?`${st.duration} сек на ответ`:'Время по настройкам игры';
  return (st.filename||'Файл ещё не выбран')+(st.type==='image'&&st.caption?.trim()?' · '+st.caption.trim().replace(/\s+/g,' '):'');
 }
+export const validQuestionPrice=value=>Number.isInteger(value)&&value>=0&&value<=2147483647;
+export function interludeRoundError(r){
+ if(r.type!=='interlude')return '';
+ if(!validQuestionPrice(r.questionPrice))return 'Укажите целую стоимость вопросов интерлюдии от 0 до 2147483647.';
+ if(r.themes.some(t=>t.questions.some(q=>q.price!==r.questionPrice)))return 'Все вопросы интерлюдии должны стоить одинаково. Сохраните стоимость в настройках раунда.';
+ return '';
+}
 export const canAddQuestion=(r,t)=>r?.type!=='final'||t.questions.length===0;
 export function finalRoundError(r){
  if(r.themes.some(t=>t.questions.length!==1))return 'В финале в каждой теме должен быть ровно один вопрос. Сначала измените состав тем или создайте отдельный раунд для финала.';
@@ -70,6 +77,7 @@ export function issues(p,media=new Map()){
  if(!p.rounds.length)errors.push({message:'Добавьте раунд'});
  for(const r of p.rounds){
   if(!r.name.trim())errors.push({message:'Укажите название раунда'});
+  const interludeError=interludeRoundError(r);if(interludeError)errors.push({message:`${r.name}: ${interludeError}`,round:r.id});
   if(!r.themes.length)errors.push({message:`${r.name}: добавьте тему`});
   for(const t of r.themes){
    if(!t.name.trim())errors.push({message:'Укажите название темы'});

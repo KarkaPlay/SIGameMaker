@@ -41,4 +41,28 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
+
+# Сборка сайта
 node "$PROJECT_DIR/build-cloudflare.mjs"
+
+# Проверка наличия Wrangler
+WRANGLER="$PROJECT_DIR/node_modules/.bin/wrangler"
+
+if [ ! -x "$WRANGLER" ]; then
+  printf '\nОшибка: Wrangler не установлен.\n'
+  printf 'Выполните в папке проекта: npm install\n' >&2
+  exit 1
+fi
+
+# Публикация Preview
+printf '\nSIGameMaker — публикация Preview...\n\n'
+
+"$WRANGLER" preview \
+  --config "$PROJECT_DIR/wrangler.jsonc" \
+  --worker-name sigamemaker \
+  --name preview
+
+# Успешное завершение
+printf '\nPreview успешно опубликован!\n'
+printf 'https://preview-sigamemaker.karkaplay.workers.dev\n'
+

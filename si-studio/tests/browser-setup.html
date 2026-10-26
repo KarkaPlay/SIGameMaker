@@ -1,0 +1,7 @@
+<!doctype html><html lang="ru"><meta charset="utf-8"><title>Setup workflow verification</title><link rel="stylesheet" href="../dist/style.css"><link rel="stylesheet" href="../dist/editor.css"><link rel="stylesheet" href="../dist/setup.css"><style>body{margin:0}.fixture{display:block;border:0;width:1440px;height:900px}#result{font-size:14px}</style><body><div id="fixture"></div><script type="module">
+import {mountSetup} from '../dist/setup-ui.js';
+const host=document.querySelector('#fixture');
+const params=new URLSearchParams(location.search);const width=Number(params.get('width'))||1280,height=Number(params.get('height'))||720;
+host.style.cssText=`width:${width}px;height:${height}px`;
+mountSetup(host,{hasDraft:params.has('draft'),draftName:'Сохранённый пак',onCancel:()=>{host.innerHTML='<p id="result">PASS: cancelled without changing any storage.</p>';},onBackup:async()=>{document.body.dataset.backup='downloaded';},onCreate:async p=>{const questions=p.rounds.reduce((n,r)=>n+r.themes.reduce((m,t)=>m+t.questions.length,0),0);host.innerHTML=`<p id="result">PASS: ${p.name}, ${p.language}, ${p.rounds.length} rounds, ${questions} questions. First prices: ${p.rounds[0].themes[0].questions.map(q=>q.price).join(',')}. No storage changed.</p>`;}});
+</script></body></html>

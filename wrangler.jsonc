@@ -1,0 +1,8 @@
+{
+  "name": "sigamemaker",
+  "compatibility_date": "2026-10-25",
+  "assets": {
+    "directory": "./cloudflare-upload"
+  },
+  "previews": {}
+}
