@@ -1,4 +1,6 @@
 /* Minimum text size: 14 CSS px, including secondary labels. */
+.welcome-explore a{font-size:14px;color:#526fa8;padding:5px 0}.welcome-explore a:hover{text-decoration:underline}
+.loading-copy{max-width:680px;padding:32px;line-height:1.7;text-align:center}.loading-copy h1{font-size:28px;color:#253149}.loading-copy p{margin-top:16px;font-size:16px}
 .welcome-page,.setup-page{min-height:100dvh;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 30%,#fff 0,#f9fafc 50%,#f4f6fa 100%)}
 /* A little motion makes the entry flow feel responsive while keeping layout stable. */
 .welcome-page .welcome-header,.welcome-page .welcome-footer{animation:welcome-rise .55s both}

@@ -22,6 +22,11 @@ async function collect(directory, prefix = '') {
 
 try {
   const files = await collect(source);
+  for (const required of ['about/index.html', 'about.css', 'about.js', 'robots.txt', 'sitemap.xml', '404.html']) {
+    if (!files.includes(join(...required.split('/')))) {
+      throw new Error(`В исходниках отсутствует публичная страница или файл индексации: ${required}`);
+    }
+  }
   for (const required of ['index.html', 'app.js', 'number-control.js', 'model.js', 'pricing.js', 'panel-motion.js', 'answer-list-motion.js', 'media-library.js', 'media-warning.js', 'library-loading.js', 'library-motion.js', 'storage.js', 'siq.js', 'import-report.js', 'import-review.js', 'import-motion.js', 'style.css', 'welcome.js', 'welcome.css', 'setup.js', 'setup-ui.js', 'setup-motion.js', 'setup-entry-motion.js', 'setup.css', 'editor.css', 'round-drag.js', 'step-drag.js', 'preview-timer.js', 'preview-demo.js', 'preview-view.js', 'reveal-motion.js', 'scenario.js', 'merge.js', 'merge-model.js', 'merge.css', 'vendor/fflate.js', 'vendor/fflate.LICENSE']) {
     if (!files.includes(join(...required.split('/')))) {
       throw new Error(`В исходниках отсутствует ${required}`);

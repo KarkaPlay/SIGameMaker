@@ -13,6 +13,7 @@
 | `si-studio/dist/setup-entry-motion.js`, `setup-motion.js` | Морфинг входа/диалогов, перелистывание, переход в итоги и непрерывный выход |
 | `si-studio/docs/setup-motion.md` | Подробности текущей реализации анимаций конструктора |
 | `si-studio/dist/welcome.js` | Стартовое меню |
+| `si-studio/dist/about/index.html`, `about.css`, `about.js` | Публичный лендинг: описание и переходы доступны без JavaScript; независимый пример выбора вопроса не обращается к черновику |
 | `si-studio/dist/step-drag.js` | Перенос шагов и вычисление места вставки |
 | `si-studio/dist/storage.js` | IndexedDB: структура и медиа |
 | `si-studio/dist/siq.js` | ZIP, XML, импорт/экспорт, медиа и таймер ответа |

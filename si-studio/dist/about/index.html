@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f7f8fa">
+    <title>SIGameMaker — бесплатный онлайн-редактор паков для SIGame</title>
+    <meta name="description" content="Создавайте и редактируйте паки для SIGame в браузере: пошаговый конструктор, вопросы с медиа, импорт и экспорт .siq. Бесплатно, без регистрации, с локальным хранением и открытым кодом.">
+    <link rel="canonical" href="https://sigamemaker.karkaplay.workers.dev/about/">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ru_RU">
+    <meta property="og:site_name" content="SIGameMaker">
+    <meta property="og:title" content="SIGameMaker — создавайте паки с удовольствием">
+    <meta property="og:description" content="Современный редактор паков для SIGame. Понятный конструктор, вопросы с медиа и готовый .siq. Бесплатно, без регистрации и отправки вопросов на сервер.">
+    <meta property="og:url" content="https://sigamemaker.karkaplay.workers.dev/about/">
+    <link rel="icon" type="image/png" href="../assets/favicon.png">
+    <link rel="stylesheet" href="../about.css">
+    <script type="module" src="../about.js"></script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "SIGameMaker",
+        "url": "https://sigamemaker.karkaplay.workers.dev/",
+        "description": "Бесплатный онлайн-редактор паков для SIGame и «Своей игры»: пошаговый конструктор, вопросы с медиа, импорт и экспорт .siq. Без регистрации, с локальной обработкой файлов и открытым исходным кодом.",
+        "applicationCategory": "GameApplication",
+        "operatingSystem": "Современный браузер на компьютере",
+        "inLanguage": "ru",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "sameAs": "https://github.com/KarkaPlay/SIGameMaker",
+        "featureList": ["Пошаговое создание пака", "Создание раундов, тем и вопросов", "Изображения, аудио и видео в сценарии", "Импорт SIQ 4 и 5 и экспорт SIQ 5", "Объединение тем и раундов из двух паков", "Локальное автосохранение черновика", "Работа без регистрации"]
+    }
+    </script>
+</head>
+<body>
+    <a class="skip-link" href="#content">Перейти к содержимому</a>
+    <header class="page-header">
+        <div class="header-inner">
+            <a class="brand" href="../" aria-label="SIGameMaker — на главную"><img src="../assets/logo-horizontal.png" width="196" alt="SIGameMaker"></a>
+            <nav class="header-nav" aria-label="О редакторе">
+                <a href="#possibilities">Возможности</a>
+                <a href="#your-files">Ваши файлы</a>
+                <a href="https://github.com/KarkaPlay/SIGameMaker">Открытый код <span aria-hidden="true">↗</span></a>
+            </nav>
+            <a class="primary header-cta" href="../">Открыть редактор <span aria-hidden="true">→</span></a>
+        </div>
+    </header>
+    <main id="content">
+        <section class="hero container" aria-labelledby="hero-title">
+            <p class="eyebrow">Бесплатный онлайн-редактор паков для SIGame</p>
+            <h1 id="hero-title">Создавайте паки.<br><span>С удовольствием.</span></h1>
+            <p class="hero-description">Современный редактор для SIGame и «Своей игры».<br>Понятный пошаговый конструктор для первого пака.<br>Удобное рабочее пространство для тех, кто уже знает, чего хочет.</p>
+            <div class="hero-actions">
+                <a class="primary" href="../">Открыть редактор <span aria-hidden="true">→</span></a>
+                <a class="text-link" href="#possibilities">Посмотреть, как всё устроено <span aria-hidden="true">↓</span></a>
+            </div>
+            <ul class="trust-line" aria-label="Основные преимущества">
+                <li>Полностью бесплатно</li>
+                <li>Без регистрации</li>
+                <li>Локально на устройстве</li>
+                <li><a href="https://github.com/KarkaPlay/SIGameMaker">Открытый исходный код <span aria-hidden="true">↗</span></a></li>
+            </ul>
+
+            <div class="editor-demo" data-editor-demo aria-label="Пример рабочего пространства редактора">
+                <div class="demo-header"><span class="demo-pack-name">Вечер хороших вопросов</span><span class="demo-label">Пример редактора</span></div>
+                <div class="demo-rounds" aria-label="Структура примера"><span class="current">01 <b>Разминка</b></span><span>02 <b>Игра продолжается</b></span><span>⚑ <b>Финал</b></span></div>
+                <div class="demo-workspace">
+                    <div class="demo-board">
+                        <div class="board-heading"><span>Разминка</span><span>3 темы · 9 вопросов</span></div>
+                        <div class="board-grid" role="group" aria-label="Пример игрового поля">
+                            <span class="board-topic">Кино</span>
+                            <button type="button" data-demo-question="0" aria-label="Кино за 100" aria-pressed="true" disabled>100</button>
+                            <button type="button" data-demo-question="3" aria-label="Кино за 200" aria-pressed="false" disabled>200</button>
+                            <button type="button" data-demo-question="6" aria-label="Кино за 300" aria-pressed="false" disabled>300</button>
+                            <span class="board-topic">Музыка</span>
+                            <button type="button" data-demo-question="1" aria-label="Музыка за 100" aria-pressed="false" disabled>100</button>
+                            <button type="button" data-demo-question="4" aria-label="Музыка за 200" aria-pressed="false" disabled>200</button>
+                            <button type="button" data-demo-question="7" aria-label="Музыка за 300" aria-pressed="false" disabled>300</button>
+                            <span class="board-topic">Наука</span>
+                            <button type="button" data-demo-question="2" aria-label="Наука за 100" aria-pressed="false" disabled>100</button>
+                            <button type="button" data-demo-question="5" aria-label="Наука за 200" aria-pressed="false" disabled>200</button>
+                            <button type="button" data-demo-question="8" aria-label="Наука за 300" aria-pressed="false" disabled>300</button>
+                        </div>
+                    </div>
+                    <div class="demo-scenario-viewport">
+                        <div class="demo-scenario" data-demo-scenario>
+                            <div class="scenario-heading"><h2 data-demo-title>Кино · 100</h2><span>Сценарий вопроса</span></div>
+                            <div class="scenario-step expanded"><span class="step-type"><span aria-hidden="true">Т</span> Текст</span><p data-demo-text>Как называется школа волшебства, в которой учился Гарри Поттер?</p></div>
+                            <div class="scenario-step compact"><span class="step-type"><span aria-hidden="true">↳</span> Игроки отвечают</span><span>20 секунд</span></div>
+                            <div class="demo-answer"><span>Правильный ответ</span><strong data-demo-answer>Хогвартс</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="demo-caption"><span data-demo-hint hidden>Нажмите на любую цену: сценарий выбранного вопроса появится справа.</span><noscript>Игровое поле и сценарий выбранного вопроса — рядом в одном окне.</noscript></p>
+            <span class="sr-only" data-demo-announcement role="status" aria-live="polite" aria-atomic="true"></span>
+        </section>
+
+        <section class="section section-bordered" id="possibilities" aria-labelledby="possibilities-title">
+            <div class="container">
+                <div class="section-intro"><p class="eyebrow">Меньше рутины. Больше ваших идей.</p><h2 id="possibilities-title">Первый пак или десятый —<br>здесь удобно создавать.</h2></div>
+                <div class="audience-grid">
+                    <article class="audience-card"><span class="audience-label">Если вы только начинаете</span><h3>Не нужно разбираться<br>во всём сразу.</h3><p>Конструктор проведёт от названия до структуры. Выберите основу, настройте раунды и переходите к вопросам. Для знакомства есть готовый пример в главном меню.</p><a class="text-link" href="../">Создать первый пак <span aria-hidden="true">→</span></a></article>
+                    <article class="audience-card"><span class="audience-label">Если вы уже создавали паки</span><h3>Сразу к тому,<br>что хотите сделать.</h3><p>Откройте свой .siq, выберите вопрос на поле и отредактируйте сценарий рядом. Переставляйте шаги, добавляйте медиа и собирайте новые паки из готовых тем.</p><a class="text-link" href="../">Перейти к своим пакам <span aria-hidden="true">→</span></a></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section container feature-row" aria-labelledby="structure-title">
+            <div class="feature-copy"><p class="eyebrow">От идеи к игровому полю</p><h2 id="structure-title">Задайте форму игры.<br>Поле соберётся само.</h2><p class="lead">Классический пак, короткая игра или чистый лист. Меняйте число раундов, тем и вопросов — и сразу видьте результат в конструкторе.</p><ul class="check-list"><li>Цены рассчитываются по заданной шкале</li><li>Обычные раунды и финал видны заранее</li><li>Структуру можно изменить позже</li></ul></div>
+            <div class="feature-visual structure-visual" aria-label="Пример настроек структуры: 6 тем, 5 вопросов, цены от 100 с шагом 100">
+                <div class="visual-heading"><span>Структура пака</span><span>Шаг 2 из 3</span></div>
+                <div class="structure-sheet"><div><span>Тем в раунде</span><strong>6</strong></div><div><span>Вопросов в теме</span><strong>5</strong></div><div><span>Начальная цена</span><strong>100</strong></div><div><span>Шаг цены</span><strong>100</strong></div></div>
+                <div class="price-scale" aria-hidden="true"><span>100</span><i>→</i><span>200</span><i>→</i><span>300</span><i>→</i><span>400</span><i>→</i><span>500</span></div>
+            </div>
+        </section>
+
+        <section class="section container feature-row feature-reversed" aria-labelledby="scenario-title">
+            <div class="feature-visual scenario-visual" aria-label="Пример сценария: текст, аудиофайл, ответ игроков">
+                <div class="visual-heading"><span>Музыка · 300</span><span>Сценарий</span></div>
+                <div class="sample-step"><span class="sample-handle" aria-hidden="true">⠿</span><div><strong>Текст</strong><p>Узнайте исполнителя по фрагменту.</p></div></div>
+                <div class="sample-step"><span class="sample-handle" aria-hidden="true">⠿</span><div><strong>Аудио</strong><p>Фрагмент песни.mp3</p></div><span class="sample-format">MP3</span></div>
+                <div class="sample-step"><span class="sample-handle" aria-hidden="true">↳</span><div><strong>Игроки отвечают</strong><p>Время на ответ — 20 секунд</p></div></div>
+                <ul class="media-types" aria-label="Поддерживаемые медиа"><li>Текст</li><li>Фото</li><li>Аудио</li><li>Видео</li></ul>
+            </div>
+            <div class="feature-copy"><p class="eyebrow">Сценарий под вашим контролем</p><h2 id="scenario-title">Сложный вопрос —<br>понятные шаги.</h2><p class="lead">Добавьте текст, изображение, мелодию или видео прямо в сценарий. Меняйте порядок перетаскиванием и задавайте время на ответ.</p><ul class="check-list"><li>Игровое поле и сценарий находятся рядом</li><li>Правильный ответ — под рукой</li><li>Изменения можно отменить и повторить</li></ul></div>
+        </section>
+
+        <section class="section container feature-row" aria-labelledby="merge-title">
+            <div class="feature-copy"><p class="eyebrow">Ваши паки могут больше</p><h2 id="merge-title">Любимые темы.<br>Новый игровой вечер.</h2><p class="lead">Откройте существующий .siq и обновите вопросы. Или загрузите два пака в раздел объединения и перенесите нужные темы и раунды в общий.</p><p class="supporting">Сборка общего пака сохраняется отдельно от текущего черновика редактора. Исходные файлы остаются у вас.</p></div>
+            <div class="feature-visual merge-visual" aria-label="Пример объединения: темы «Саундтреки» и «Хиты 2000-х» попадают в общий пак">
+                <div class="merge-source"><strong>Всё о кино</strong><span class="selected">Саундтреки</span><span>Режиссёры</span></div>
+                <div class="merge-source"><strong>Знакомые мелодии</strong><span>Классика</span><span class="selected">Хиты 2000-х</span></div>
+                <div class="merge-connector" aria-hidden="true">↓</div>
+                <div class="merge-result"><strong>Мой музыкальный вечер.siq</strong><span>Саундтреки + Хиты 2000-х</span></div>
+            </div>
+        </section>
+
+        <section class="section values-section" id="your-files" aria-labelledby="values-title">
+            <div class="container">
+                <div class="section-intro"><p class="eyebrow">Без лишних условий</p><h2 id="values-title">Ваши идеи. Ваши файлы.<br>Ваш редактор.</h2><p class="lead">Откройте сайт и занимайтесь вопросами.<br>Всё необходимое для создания пака уже доступно.</p></div>
+                <div class="values-grid">
+                    <article><span class="value-symbol" aria-hidden="true">0 ₽</span><h3>Полностью бесплатно</h3><p>Создание, редактирование, медиа, объединение и экспорт. Без подписки и платного доступа к функциям.</p></article>
+                    <article><span class="value-symbol" aria-hidden="true">→</span><h3>Без регистрации</h3><p>Не нужно создавать аккаунт, указывать почту или устанавливать программу. Просто откройте редактор.</p></article>
+                    <article><span class="value-symbol" aria-hidden="true">⌂</span><h3>На вашем устройстве</h3><p>Вопросы и медиа обрабатываются локально в браузере и не отправляются на сервер. Черновик сохраняется автоматически.</p></article>
+                    <article><span class="value-symbol code-symbol" aria-hidden="true">&lt;/&gt;</span><h3>Открытый код</h3><p>Можно изучить, как устроен редактор, предложить улучшение или сообщить об ошибке.</p><a class="text-link" href="https://github.com/KarkaPlay/SIGameMaker">Посмотреть на GitHub <span aria-hidden="true">↗</span></a></article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section container" aria-labelledby="export-title">
+            <div class="section-intro"><p class="eyebrow">От черновика к игре</p><h2 id="export-title">Проверьте вопросы.<br>Заберите готовый пак.</h2></div>
+            <ol class="finish-steps">
+                <li><span class="step-number" aria-hidden="true">01</span><h3>Посмотрите сценарий</h3><p>Ручной предпросмотр помогает проверить порядок текста, медиа и раскрытия ответа.</p></li>
+                <li><span class="step-number" aria-hidden="true">02</span><h3>Поправьте незаполненное</h3><p>Перед экспортом редактор укажет пустые вопросы, ответы и отсутствующие файлы.</p></li>
+                <li><span class="step-number" aria-hidden="true">03</span><h3>Скачайте .siq</h3><p>Вопросы и встроенные медиа — в одном файле. Загрузите его в SIGame для проведения игры.</p></li>
+            </ol>
+        </section>
+
+        <section class="section section-bordered" aria-labelledby="faq-title">
+            <div class="container faq-layout"><div><p class="eyebrow">Перед первым вопросом</p><h2 id="faq-title">Осталось<br>пару деталей.</h2></div><div class="faq-list">
+                <details open><summary>Смогу ли я разобраться без опыта?</summary><p>Начните с пошагового конструктора: название, основа, структура, вопросы. Для знакомства с редактором можно открыть пример в главном меню. Настройки структуры доступны и после создания пака.</p></details>
+                <details><summary>Где сохраняется моя работа?</summary><p>Текущий черновик автоматически сохраняется в этом браузере на этом устройстве, если доступно локальное хранилище. Очистка данных браузера удаляет черновик. Скачивайте .siq как резервную копию; между браузерами и устройствами он автоматически не переносится.</p></details>
+                <details><summary>Можно ли редактировать существующие паки?</summary><p>Да, поддерживается импорт SIQ 4 и 5 в пределах возможностей редактора. Если пак содержит неподдерживаемые элементы, вы увидите причины и доступные действия до замены текущего черновика.</p></details>
+                <details><summary>На каких устройствах работает редактор?</summary><p>Интерфейс рассчитан на компьютер или ноутбук и современный браузер. Рабочие панели располагаются на горизонтальном экране; мобильная компоновка пока не поддерживается.</p></details>
+                <details><summary>Можно ли провести игру прямо здесь?</summary><p>SIGameMaker помогает подготовить пак. Предпросмотр вопросов ручной и не заменяет движок SIGame. Скачайте .siq, проверьте его в самой SIGame и проводите игру там.</p></details>
+            </div></div>
+        </section>
+
+        <section class="closing-section" aria-labelledby="closing-title"><div class="container closing-inner"><div><p class="eyebrow">Отличная игра начинается с вашей идеи</p><h2 id="closing-title">Каким будет<br>ваш следующий пак?</h2><p>Создайте первый. Доработайте любимый.<br>Или соберите что-то совершенно новое.</p></div><div class="closing-action"><a class="primary" href="../">Открыть редактор <span aria-hidden="true">→</span></a><span>Бесплатно. Без регистрации. Уже можно начинать.</span></div></div></section>
+    </main>
+    <footer class="page-footer container"><a class="footer-brand" href="../">SIGameMaker</a><span>Создание и редактирование паков для SIGame</span><nav aria-label="Ссылки проекта"><a href="https://github.com/KarkaPlay/SIGameMaker">Исходный код</a><a href="https://github.com/KarkaPlay/SIGameMaker/issues">Сообщить об ошибке</a></nav></footer>
+</body>
+</html>

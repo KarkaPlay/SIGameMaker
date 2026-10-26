@@ -1,2 +1,133 @@
-.at-merge{overflow:hidden;min-width:1024px}.merge-shell{height:100dvh;display:flex;flex-direction:column;background:#f6f8fc;color:#273850;font-size:14px}.merge-shell button{font-size:14px;min-height:34px;border-radius:8px;padding:6px 10px}.merge-header{display:flex;align-items:center;gap:28px;padding:18px 28px;border-bottom:1px solid #e0e6ef;background:#fff;flex-shrink:0}.merge-header h1{font-size:22px;letter-spacing:-.5px}.merge-header p{color:#708099;margin-top:4px}.merge-header>button{margin-left:auto}.merge-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,1.2fr) minmax(0,1fr);gap:18px;padding:20px;flex:1;min-height:0}.merge-pane{min-width:0;min-height:0;border:1px solid #dfe6f0;border-radius:14px;background:#fff;display:flex;flex-direction:column;overflow:hidden}.merge-pane>header{padding:18px;border-bottom:1px solid #e5eaf2;flex-shrink:0}.merge-eyebrow{display:block;letter-spacing:1px;font-size:14px;color:#71839e;margin-bottom:10px}.merge-pane h2{font-size:19px;overflow-wrap:anywhere;line-height:1.3}.merge-pane header p{color:#708099;margin:8px 0;line-height:1.5}.merge-source header>button{margin-top:4px}.merge-scroll{overflow:auto;min-height:0;flex:1;padding:14px;overscroll-behavior:contain}.merge-source-round{border:1px solid #e0e7f1;border-radius:10px;margin-bottom:12px;overflow:hidden}.merge-source-round>summary{padding:12px;background:#f0f4fc;font-weight:600;cursor:pointer;overflow-wrap:anywhere}.merge-source-theme{border-top:1px solid #e8edf4}.merge-source-theme>summary{padding:12px;cursor:pointer;overflow-wrap:anywhere}.merge-source-theme summary>span{display:inline}.merge-source-theme small{display:block;color:#78859b;margin:5px 0 0 15px}.merge-source-theme ol{padding:0 20px 0 34px;max-height:270px;overflow:auto}.merge-source-theme li{line-height:1.6;margin:12px 0;overflow-wrap:anywhere}.merge-source-theme li small{margin-left:0}.merge-transfer{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;background:#f8faff;cursor:grab;color:#526c99}.merge-transfer button{background:#edf2ff;color:#315cdb;flex-shrink:0}.merge-upload-hint{text-align:center;color:#8090a8;padding:60px 10px;line-height:1.7}.merge-upload-hint>span{font-size:36px;color:#5379d4}.merge-start{display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:20px;padding:30px;min-width:0}.merge-start>span{font-size:40px;color:#315cdb}.merge-start h2{font-size:30px;line-height:1.25;letter-spacing:-1px}.merge-start p,.merge-start small{color:#708099;line-height:1.6}.merge-start small{max-width:270px}.merge-start .primary{padding:12px 28px}.merge-result{border-color:#b4c5ef;box-shadow:0 5px 22px #315cdb08}.merge-result label{display:block;font-size:14px;color:#697d9c;min-width:0}.merge-result input{width:100%;min-width:0;font-size:14px;border:1px solid #dfe6ef;border-radius:7px;padding:7px 9px;margin-top:4px;background:#fff;color:#2d405f}.merge-result header label+label{margin-top:8px}.merge-result header input[data-merge-name=pack]{font-size:18px;font-weight:600}.merge-history,.merge-result-tools{display:flex;gap:10px}.merge-history button{color:#526c99;padding-left:0}.merge-result-tools{padding:10px 14px 0}.merge-result-tools button{color:#315cdb}.merge-round-tabs{display:flex;overflow:auto;gap:7px;padding:10px 14px;flex-shrink:0;border-bottom:1px solid #e5eaf2}.merge-round-tabs button{white-space:nowrap;max-width:230px;overflow:hidden;text-overflow:ellipsis;background:#f1f4fa;flex-shrink:0}.merge-round-tabs button[aria-current]{background:#315cdb;color:white}.merge-target-heading{display:flex;gap:10px;align-items:end;padding-bottom:14px}.merge-target-heading>label{flex:1}.merge-target-heading>div,.merge-result-theme>div{display:flex;gap:3px;flex-shrink:0}.merge-target-heading button,.merge-result-theme button{color:#617496}.merge-result-theme{border:1px solid #dbe4f7;border-radius:10px;padding:12px;margin-bottom:10px;background:#f8faff}.merge-result-theme p{color:#7184a0;margin:8px 0;line-height:1.5;overflow-wrap:anywhere}.merge-result-theme>div{justify-content:flex-end}.merge-drop-hint{text-align:center;padding:22px 8px;border:1px dashed #c4d2ed;border-radius:10px;line-height:1.7;color:#7489ae}.merge-result footer{border-top:1px solid #e0e7f1;padding:14px;display:flex;flex-direction:column;gap:9px;text-align:center;flex-shrink:0}.merge-result footer span{color:#7b89a0}.merge-hover{outline:2px solid #315cdb;outline-offset:-3px;background:#eef3ff}.merge-error{max-width:680px;max-height:75dvh;padding:26px;border:1px solid #dce4ef;border-radius:14px}.merge-error h2{font-size:22px;margin-bottom:16px}.merge-error pre{white-space:pre-wrap;font:inherit;line-height:1.7;overflow-wrap:anywhere}.merge-error li{margin:9px 0;line-height:1.5}.merge-error button{margin-top:20px;font-size:14px;padding:10px 18px}.welcome-merge-link{display:block;margin:18px auto 0;color:#315cdb;font-size:15px;padding:8px 16px}.merge-shell button:focus-visible,.merge-shell summary:focus-visible{outline:2px solid #315cdb;outline-offset:2px}
-.merge-authors{margin-top:10px}.merge-authors summary{cursor:pointer;color:#6b7e99}.merge-authors label{margin-top:8px}.merge-pane>header .merge-history{margin-top:4px}
+/* Same landscape canvas, surfaces and disclosure motion as the studio editor. */
+.at-merge { overflow:hidden; min-width:1024px }
+.merge-shell { height:100dvh; min-height:650px; display:flex; flex-direction:column; background:#f5f7fb; color:#34445d; font-size:14px }
+.merge-shell small { font-size:14px }
+.merge-shell button { font-size:14px; min-height:36px; border-radius:8px; padding:8px 12px }
+.merge-shell svg { display:block; width:18px; height:18px; flex-shrink:0 }
+.merge-shell button:focus-visible,.merge-shell summary:focus-visible { outline:3px solid #9bb1f2; outline-offset:2px }
+.merge-shell button:hover:not(:disabled):not(.primary) { background:#edf2fc; color:#315cdb }
+.merge-shell button:disabled { opacity:.38 }
+.merge-shell input { min-width:0; width:100%; border:1px solid #dce5f3; border-radius:8px; padding:9px 11px; color:#36547e; background:#fff; font-size:15px; min-height:40px }
+.merge-shell input:focus { border-color:#88a3ed; box-shadow:0 0 0 3px #315cdb0c }
+.merge-shell input::placeholder { color:#8191a8; font-weight:400 }
+.merge-header { height:70px; display:flex; align-items:center; gap:28px; padding:0 28px; border-bottom:1px solid #e5eaf2; background:#fff; flex-shrink:0 }
+.merge-header>div { min-width:0; padding-left:28px; border-left:1px solid #e4e9f1 }
+.merge-header h1 { font-size:18px; letter-spacing:-.4px; line-height:1.3 }
+.merge-header p { color:#71829b; margin-top:4px; line-height:1.4 }
+.merge-workspace { display:grid; grid-template-columns:minmax(0,1fr) minmax(390px,1.4fr) minmax(0,1fr); gap:22px; padding:24px 28px 0; flex:1; min-height:0; min-width:0; overflow:hidden }
+.merge-pane { min-width:0; min-height:0; border:1px solid #e1e7f1; border-radius:13px; background:#fff; display:flex; flex-direction:column; overflow:hidden }
+.merge-pane>header { padding:0; border-bottom:0; box-shadow:inset 0 -1px #e8edf5; flex-shrink:0 }
+.merge-pane>header>h2 { display:flex; align-items:center; height:64px; padding:0 20px; font-size:17px; font-weight:600; color:#405570 }
+.merge-scroll { overflow:auto; min-height:0; flex:1; padding:18px 16px; overscroll-behavior:contain; scrollbar-width:thin }
+/* Only the name and a disclosure chevron remain in a closed pack header. */
+.merge-metadata-toggle { display:flex; align-items:center; gap:14px; width:100%; text-align:left }
+.merge-shell .merge-metadata-toggle { height:64px; padding:0 20px; border-radius:0; font-size:17px; font-weight:600; color:#405570 }
+.merge-metadata-toggle>span { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
+.merge-metadata-toggle>svg { color:#8b9cb5; transition:transform .26s cubic-bezier(.2,.75,.25,1) }
+.merge-metadata.is-open .merge-metadata-toggle>svg { transform:rotate(180deg) }
+.merge-metadata-reveal { display:grid; grid-template-rows:0fr; opacity:0; visibility:hidden; transition:grid-template-rows .26s cubic-bezier(.2,.75,.25,1),opacity .2s ease,visibility 0s linear .26s }
+.merge-metadata.is-open .merge-metadata-reveal { grid-template-rows:1fr; opacity:1; visibility:visible; transition-delay:0s }
+.merge-metadata-clip { min-height:0; overflow:hidden }
+.merge-metadata-fields { display:flex; flex-direction:column; gap:14px; padding:0 20px 20px; max-height:240px; overflow:auto; scrollbar-width:thin }
+.merge-metadata-fields label { display:flex; flex-direction:column; gap:7px; font-size:14px; color:#647b9b; line-height:1.4 }
+.merge-metadata-fields p { color:#71829b; line-height:1.6; overflow-wrap:anywhere }
+.merge-metadata-fields .secondary { align-self:flex-start }
+.merge-source-author { white-space:pre-wrap }
+.merge-result { border-color:#cddbf1; box-shadow:0 4px 18px #294b8606 }
+.merge-result>header { background:radial-gradient(ellipse at 15% 0,#3d68c8,transparent 80%),linear-gradient(135deg,#2d56b5,#1d408e); border-bottom:0; box-shadow:none; color:#fff }
+.merge-result .merge-metadata-toggle { color:#fff }
+.merge-result .merge-metadata-toggle>svg { color:#c0d3f6 }
+.merge-shell .merge-result .merge-metadata-toggle:hover:not(:disabled) { background:#ffffff0d; color:#fff }
+.merge-result .merge-metadata-toggle:focus-visible { outline-color:#e2bc5f; outline-offset:-4px }
+.merge-result .merge-metadata-fields label,.merge-result .merge-metadata-fields p { color:#d3e0f7 }
+.merge-result .merge-metadata-fields input:focus { outline:2px solid #e2bc5f; outline-offset:2px }
+/* Each source item has one title row and one adjacent add action. */
+.merge-source-round { position:relative; border:1px solid #e0e7f1; border-radius:10px; margin-bottom:14px; overflow:hidden; background:#fff }
+.merge-source-round:last-child { margin-bottom:0 }
+.merge-source-round>details>summary { background:#f0f4fb; color:#48658f; font-weight:600 }
+.merge-source-round summary { position:relative; list-style:none; padding:14px 14px 14px 32px; cursor:pointer; line-height:1.5; min-height:50px }
+.merge-source-round summary::-webkit-details-marker { display:none }
+.merge-source-round summary::before { content:''; position:absolute; left:14px; top:21px; width:6px; height:6px; border-right:1.5px solid #8498b6; border-bottom:1.5px solid #8498b6; transform:rotate(-45deg); transition:transform .2s ease }
+.merge-source-round details[open]>summary::before { transform:rotate(45deg) }
+.has-transfer>details>summary { padding-right:48px }
+.merge-source-name { overflow-wrap:anywhere }
+.merge-source-round summary:focus-visible { outline-offset:-3px }
+.merge-source-round>details[open]>summary { border-bottom:1px solid #e5ebf4 }
+.merge-source-theme { position:relative; border-top:1px solid #edf1f7 }
+.merge-source-theme:first-child { border-top:0 }
+.merge-source-theme summary:hover { background:#f8faff }
+.merge-source-theme small { display:block; color:#7486a1; margin-top:3px; font-weight:400 }
+.merge-source-theme ol { margin:0; padding:0 20px 12px 36px; max-height:270px; overflow:auto; scrollbar-width:thin; overscroll-behavior:contain }
+.merge-source-theme li { line-height:1.6; padding:10px 0; border-top:1px solid #edf1f7; overflow-wrap:anywhere }
+.merge-source-theme li strong { color:#48658f; font-weight:600 }
+.merge-final-label { display:block; color:#8b6c32; font-size:14px; font-weight:400; margin-top:3px }
+.merge-shell .merge-icon-button { display:grid; place-items:center; width:34px; min-height:34px; padding:7px; flex-shrink:0; color:#6c83a3 }
+.merge-source-round>.merge-icon-button,.merge-source-theme>.merge-icon-button { position:absolute; right:8px; top:9px; color:#426eae; background:#e8effa }
+.merge-transfer[draggable=true] { cursor:grab }
+.merge-transfer[draggable=true]:active { cursor:grabbing }
+.merge-upload-hint { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100%; text-align:center; color:#7185a3; padding:24px 10px; line-height:1.65; gap:16px }
+.merge-upload-hint>span { display:grid; place-items:center; width:64px; height:64px; border-radius:18px; border:1px dashed #bdcdea; background:#f3f6fc; color:#6d8cc3 }
+.merge-upload-hint>span svg { width:26px; height:26px }
+.merge-upload-hint small { color:#7b8ca5; max-width:220px }
+.merge-upload-hint .secondary { min-height:40px; padding:10px 18px }
+.merge-start { display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; gap:20px; padding:32px 24px; min-width:0; min-height:0; overflow:auto; border-radius:20px; background:radial-gradient(ellipse at 50% 40%,#e0eaffb0,transparent 75%) }
+.merge-start .merge-start-symbol { display:grid; place-items:center; width:64px; height:64px; background:linear-gradient(135deg,#426ed8,#21469e); color:#fff; font-size:34px; border-radius:18px; box-shadow:0 5px 0 -2px #1e3f8d,0 15px 28px #315cdb18; flex-shrink:0 }
+.merge-start h2 { font-size:34px; line-height:1.15; letter-spacing:-1.1px; color:#304b77; font-weight:650 }
+.merge-start p,.merge-start small { color:#7184a1; line-height:1.65; max-width:300px }
+.merge-start .primary { min-height:48px; padding:13px 24px; border-radius:11px; font-size:16px }
+/* Persistent actions stay accessible while the metadata is collapsed. */
+.merge-result-tools { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px 4px; flex-shrink:0 }
+.merge-result-tools>div { display:flex; align-items:center; gap:4px }
+.merge-result-tools button { display:inline-flex; align-items:center; gap:5px; color:#5274ab }
+.merge-history { padding-left:10px; border-left:1px solid #e8edf5 }
+.merge-round-tabs { display:flex; overflow:auto; gap:6px; padding:6px 16px 12px; flex-shrink:0; border-bottom:1px solid #e8edf5; scrollbar-width:thin }
+.merge-round-tabs button { white-space:nowrap; max-width:200px; overflow:hidden; text-overflow:ellipsis; border:1px solid transparent; color:#7487a3; flex-shrink:0 }
+.merge-round-tabs button[aria-current] { background:#eef3fc; border-color:#d9e4f5; color:#315c9e }
+.merge-round-tabs button.is-final { color:#8b6c32 }
+.merge-round-tabs button.is-final[aria-current] { background:#fbf7ef; border-color:#eadcc1; color:#806127 }
+.merge-target-heading { display:flex; gap:12px; align-items:end; padding:0 0 18px }
+.merge-target-heading>label { flex:1; min-width:0 }
+.merge-field-label { display:block; font-size:14px; color:#7588a4; margin:0 0 6px 8px }
+.merge-shell .merge-target-heading input { font-size:18px; font-weight:550; background:transparent; border-color:transparent; padding:8px; text-overflow:ellipsis }
+.merge-shell .merge-target-heading input:hover { background:#f5f8fd }
+.merge-shell .merge-target-heading input:focus { background:#fff; border-color:#88a3ed }
+.merge-item-actions { display:flex; gap:2px; align-items:center; flex-shrink:0 }
+.merge-shell button.merge-remove:hover:not(:disabled) { background:#fbf0f1; color:#b55664 }
+.merge-result-theme { border:1px solid #e1e8f3; border-radius:11px; padding:10px 12px 12px; margin-bottom:12px; background:#fff }
+.merge-theme-title { display:flex; align-items:center; gap:8px; min-width:0 }
+.merge-theme-number { color:#91a1b8; font-size:14px; font-variant-numeric:tabular-nums; flex-shrink:0 }
+.merge-shell .merge-theme-title input { border-color:transparent; background:transparent; padding:8px 6px; font-size:16px; font-weight:500; text-overflow:ellipsis }
+.merge-shell .merge-theme-title input:hover { background:#f5f8fd }
+.merge-shell .merge-theme-title input:focus { background:#fff; border-color:#88a3ed }
+.merge-theme-bottom { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:2px }
+.merge-theme-bottom p { color:#7487a3; font-size:14px; line-height:1.5 }
+.merge-prices { display:flex; gap:6px; padding-top:8px; overflow:auto; scrollbar-width:thin; font-variant-numeric:tabular-nums }
+.merge-prices>span { color:#5875a0; background:#f1f5fc; border-radius:5px; padding:5px 9px; font-size:14px; flex-shrink:0 }
+.merge-drop-hint { text-align:center; padding:20px 12px; border:1px dashed #ccd8ea; border-radius:11px; line-height:1.7; color:#6882a6; background:#f9fbff }
+.merge-drop-hint span { color:#8193ad }
+.merge-result footer { border-top:1px solid #e8edf5; padding:12px 18px; flex-shrink:0; background:#fff }
+.merge-result footer .primary { min-height:42px; border-radius:9px; width:100%; gap:9px }
+.merge-footer { height:68px; display:flex; align-items:center; gap:24px; padding:0 28px; flex-shrink:0; color:#7588a3 }
+.merge-footer button { padding:12px 0; color:#5f7393 }
+.merge-step { margin-left:auto; white-space:nowrap }
+.merge-hover { outline:2px solid #6b91df; outline-offset:-3px; background:#edf3ff }
+.merge-error { max-width:680px; max-height:75dvh; padding:28px; border:1px solid #dce4ef; border-radius:18px }
+.merge-error h2 { font-size:24px; letter-spacing:-.6px; margin-bottom:16px }
+.merge-error p,.merge-error pre,.merge-error li { line-height:1.7; color:#71839e }
+.merge-error pre { white-space:pre-wrap; font:inherit; line-height:1.7; overflow-wrap:anywhere }
+.merge-error li { margin:9px 0 }
+.merge-error button { margin-top:20px; font-size:14px; padding:11px 18px; border-radius:10px; background:#edf2fc; color:#315cdb }
+.welcome-merge-link { display:block; margin:18px auto 0; color:#315cdb; font-size:15px; padding:8px 16px }
+@media(max-height:780px) {
+ .merge-workspace { padding-top:18px }
+ .merge-footer { height:58px }
+ .merge-start { gap:16px; padding:20px }
+ .merge-start h2 { font-size:30px }
+ .merge-metadata-fields { max-height:190px }
+}
+@media(prefers-reduced-motion:reduce) {
+ .merge-shell *,.merge-error { transition:none!important; scroll-behavior:auto!important }
+}
+/* Keep both pages inside the center column during a stage transition. */
+.merge-center { position:relative; display:flex; min-height:0; min-width:0; overflow:hidden; border-radius:13px }
+.merge-center>.merge-result,.merge-center>.merge-start { flex:1; min-width:0 }

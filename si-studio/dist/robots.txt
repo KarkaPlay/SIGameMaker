@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sigamemaker.karkaplay.workers.dev/sitemap.xml

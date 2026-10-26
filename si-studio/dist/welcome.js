@@ -19,7 +19,7 @@ export function welcomeHTML(pack,hasDraft,storageOK){
    <button class="welcome-action welcome-open" data-action="import"><span class="welcome-action-icon">${icon('folder')}</span><h2>Открыть .siq</h2><p>Выберите или перетащите файл</p><span class="welcome-action-arrow">${icon('diagonal')}</span></button>
    <button class="welcome-action welcome-merge" data-action="merge-packs"><span class="welcome-action-icon">${icon('merge')}</span><h2>Объединить два пака</h2><p>Соберите лучшее в одной игре</p><span class="welcome-action-arrow">${icon('diagonal')}</span></button>
   </div>
-  <div class="welcome-explore"><span>Впервые здесь?</span><button data-action="open-demo">Посмотреть пример <span>↗</span></button><i>·</i><button data-action="help">Как это работает</button></div>
+  <div class="welcome-explore"><span>Впервые здесь?</span><button data-action="open-demo">Посмотреть пример <span>↗</span></button><i>·</i><button data-action="help">Как это работает</button><i>·</i><a href="./about/">О редакторе</a></div>
  </main>
  <footer class="welcome-footer"><span class="welcome-privacy">${icon('storage')}${storageOK?'Без регистрации. Черновик сохраняется в этом браузере.':'Автосохранение недоступно. Скачивайте .siq, чтобы сохранить работу.'}</span><span>Сделано для «Своей игры»</span></footer></div>`;
 }
