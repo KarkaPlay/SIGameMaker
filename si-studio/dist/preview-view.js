@@ -47,3 +47,22 @@ export function createPreviewStageMotion({reduceMotion=()=>matchMedia('(prefers-
  }
  return {show,stop};
 }
+
+// A local popup leaves the scene layout intact; disposal owns every animation/listener.
+export function mountPreviewShowman(popup,{reducedMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches}={}){
+ if(!popup)return ()=>{};
+ const button=popup.querySelector('[data-dismiss-showman]');
+ let motion=null,disposed=false,closing=false;
+ if(!reducedMotion())motion=popup.animate([{opacity:0,transform:'translateX(-24px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.12,1,.2,1)'});
+ const dismiss=()=>{
+  if(disposed||closing)return;closing=true;
+  const current=getComputedStyle(popup),start={opacity:current.opacity,transform:current.transform};
+  motion?.cancel();
+  const finish=()=>{if(disposed)return;popup.hidden=true;popup.closest('.demo-layout')?.querySelector('[data-preview-next]')?.focus({preventScroll:true});};
+  if(reducedMotion()){finish();return;}
+  motion=popup.animate([start,{opacity:0,transform:'translateX(-18px)'}],{duration:220,easing:'cubic-bezier(.2,.75,.25,1)',fill:'forwards'});
+  motion.finished.then(finish,()=>{});
+ };
+ button?.addEventListener('click',dismiss);
+ return ()=>{disposed=true;motion?.cancel();button?.removeEventListener('click',dismiss);};
+}

@@ -1,5 +1,5 @@
 import {revealMode} from './scenario.js';
-import {questionType,catSettings,kinds,stepSummary,answerLabel} from './model.js';
+import {questionType,catSettings,kinds,stepKind,stepSummary,answerLabel} from './model.js';
 
 // Each stage has a deterministic local animation, with snapshots for back/restart.
 export function createPreviewDemo(q,round,theme){
@@ -12,7 +12,7 @@ export function createPreviewDemo(q,round,theme){
  const clear=frame=>frame.events.push({duration:250,exit:true,players:snapshot()});
  const judge=(frame,i,correct,amount)=>{
   popup(frame,i,correct?right:'Другой ответ',1200);
-  players[i].score+=correct?amount:-amount;players[i].hidden=false;
+  players[i].score+=correct?amount:type==='noRisk'?0:-amount;players[i].hidden=false;
   popup(frame,i,correct?'Верно':'Неверно',1000,{popup:{player:i,text:correct?'Верно':'Неверно',verdict:correct?'correct':'wrong',delta:(correct?'+':'−')+amount}});clear(frame);
  };
  const board=add('Выбор вопроса',{kind:'board',board:'select',summary:'Тема 2 · 300',autoAdvance:true});
@@ -25,6 +25,8 @@ export function createPreviewDemo(q,round,theme){
   popup(transfer,0,recipient===0?'Оставляю себе':'Передаю Игроку 2');clear(transfer);popup(transfer,recipient,'Вопрос мой');clear(transfer);
   add('Тема кота',{kind:'bagcat',scene:cat.theme||theme.name});const cost=add(p.maximum!==0&&p.minimum===p.maximum?'Стоимость кота':'Выбор стоимости',{kind:'bagcat',scene:cat.theme||theme.name});
   popup(cost,recipient,p.maximum!==0&&p.minimum===p.maximum?`Стоимость ${price}`:`Выбираю ${price}`);clear(cost);
+ }else if(type==='noRisk'){
+  price=nominal*2;recipient=0;add('Без риска',{scene:`Верный ответ: +${price}. Ошибка: без потери очков.`,summary:'Отвечает выбравший вопрос',symbol:'♡'});
  }else if(type==='stake'){
   price=nominal+100;const auction=add('Открытые торги',{kind:'stake',scene:'Аукцион'});
   popup(auction,0,`Ставка ${nominal}`);clear(auction);popup(auction,1,`Ставка ${price}`);clear(auction);popup(auction,2,'Пас');clear(auction);popup(auction,0,'Пас');clear(auction);popup(auction,1,`Играю за ${price}`);clear(auction);
@@ -32,8 +34,9 @@ export function createPreviewDemo(q,round,theme){
   const stake=add('Скрытые ставки',{kind:'stake',scene:'Скрытые ставки'});
   for(let i=0;i<3;i++){players[i].hidden=true;popup(stake,i,'Ставка сделана',800);clear(stake);}
  }
- const marker=q.steps.findIndex(st=>st.type==='answer'),split=marker<0?q.steps.length:marker,lastVisual=q.steps.slice(0,split).findLastIndex(st=>['text','image'].includes(st.type));
- for(let i=0;i<split;i++)add(kinds[q.steps[i].type][0],{kind:q.steps[i].type,summary:stepSummary(q.steps[i]),contentIndex:i,step:q.steps[i]});
+ const marker=q.steps.findIndex(st=>st.type==='answer'),split=marker<0?q.steps.length:marker,lastVisual=q.steps.slice(0,split).findLastIndex(st=>['text','image'].includes(st.type)&&(!st.placement||st.placement==='screen'));
+ const contentFrame=(i,extra={})=>{const st=q.steps[i],kind=stepKind(st),replic=kind==='replic',previous=q.steps.slice(0,i).findLastIndex(s=>['text','image'].includes(s.type)&&(!s.placement||s.placement==='screen'));return add(kinds[kind][0],{kind,summary:stepSummary(st),contentIndex:replic?(previous>=0?previous:undefined):i,step:st,...(replic?{replic:st.value}:{}),...extra});};
+ for(let i=0;i<split;i++)contentFrame(i);
  const duration=q.steps[marker]?.duration||10,answer=add(answerLabel(q,round),{kind:'answer',summary:stepSummary(q.steps[marker]||{type:'answer',duration:0}),answerWindow:true,step:q.steps[marker]||{type:'answer',duration:0},contentIndex:lastVisual>=0?lastVisual:undefined,scene:'Время ответа',clockSeconds:duration});
  const think=fraction=>answer.events.push({duration:duration*1000*fraction,clock:true,players:snapshot()});
  if(type==='simple'){
@@ -44,7 +47,7 @@ export function createPreviewDemo(q,round,theme){
  if(revealMode(q)==='standard'){
   const reveal=add('Показать правильный ответ',{kind:'answer',symbol:'✓',summary:right,scene:right,reveal:true,autoAdvance:type==='stakeAll'});if(type==='stakeAll')reveal.events.push({duration:1400,players:snapshot()});
  }else{
-  for(let i=split+1;i<q.steps.length;i++)add(kinds[q.steps[i].type][0],{kind:q.steps[i].type,summary:stepSummary(q.steps[i]),contentIndex:i,step:q.steps[i],reveal:true,autoAdvance:type==='stakeAll'&&i===q.steps.length-1});
+  for(let i=split+1;i<q.steps.length;i++)contentFrame(i,{reveal:true,autoAdvance:type==='stakeAll'&&i===q.steps.length-1});
  }
  if(type==='stakeAll'){
   const check=add('Проверка ответов',{scene:'Проверка ответов игроков',reveal:true,autoAdvance:true});for(let i=0;i<3;i++)judge(check,i,i!==1,bids[i]);

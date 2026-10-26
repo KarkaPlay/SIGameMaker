@@ -54,7 +54,7 @@ test('runner pauses countdown during bubbles, resumes thinking, completes once a
 });
 
 test('every preview starts with the same animated schematic selection and returns to the board with final scores',()=>{
- for(const type of ['simple','stake','stakeAll','bagcat']){
+ for(const type of ['simple','stake','stakeAll','bagcat','noRisk']){
   const {q,round,theme}=fixture(type),before=structuredClone(q),frames=createPreviewDemo(q,round,theme).frames;
   assert.equal(frames[0].board,'select');assert.equal(frames[0].autoAdvance,true);
   assert.deepEqual(frames[0].events.map(e=>e.boardSelection),[false,true]);
@@ -76,4 +76,12 @@ test('scenario frame labels and summaries use editor event names on both sides o
  }
  assert.equal(frames.find(f=>f.answerWindow).title,answerLabel(q,round));
  assert.equal(frames.some(f=>/Событие|Раскрытие · событие/.test(f.title)),false);
+});
+
+test('no-risk demo gives only the chooser twice the nominal price and keeps the question unchanged',()=>{
+ const {q,round,theme}=fixture('noRisk'),before=structuredClone(q),frames=createPreviewDemo(q,round,theme).frames;
+ assert.match(frames.find(f=>f.title==='Без риска').scene,/\+400/);
+ const answer=frames.find(f=>f.answerWindow),verdicts=answer.events.filter(e=>e.popup?.verdict);
+ assert.equal(answer.title,'Выбравший вопрос отвечает');assert.deepEqual(verdicts.map(e=>[e.popup.player,e.popup.delta]),[[0,'+400']]);
+ assert.deepEqual(frames.at(-1).players.map(p=>p.score),[2400,2500,3000]);assert.deepEqual(q,before);
 });

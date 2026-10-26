@@ -1,10 +1,12 @@
 export const uid=()=>crypto.randomUUID();
-export const kinds={text:['Текст на экране','T'],image:['Изображение','▧'],audio:['Аудио','♫'],video:['Видео','▷'],answer:['Игроки отвечают','⌁']};
-export const questionTypes={simple:'Обычный вопрос',stake:'Вопрос-аукцион',stakeAll:'Скрытые ставки всех игроков',bagcat:'Кот в мешке'};
+export const kinds={text:['Текст на экране','T'],replic:['Слово ведущего','❝'],image:['Изображение','▧'],audio:['Аудио','♫'],video:['Видео','▷'],answer:['Игроки отвечают','⌁']};
+// Replicas retain the native text placement, including imported SIQ 4 oral/say.
+export const stepKind=st=>st.type==='text'&&st.placement==='replic'?'replic':st.type;
+export const questionTypes={simple:'Обычный вопрос',stake:'Вопрос-аукцион',stakeAll:'Скрытые ставки всех игроков',bagcat:'Кот в мешке',noRisk:'Без риска'};
 export const questionType=q=>q.type===undefined?'simple':q.type;
 export const isAuction=q=>['stake','stakeAll'].includes(questionType(q));
 export const auctionLabel=q=>questionType(q)==='stakeAll'?'Скрытые ставки':'Аукцион';
-export const answerLabel=(q,r)=>r?.type==='final'?'Финалисты отвечают':questionType(q)==='stakeAll'?'Все игроки отвечают письменно':questionType(q)==='stake'?'Победитель аукциона отвечает':questionType(q)==='bagcat'?'Получатель кота отвечает':'Игроки отвечают';
+export const answerLabel=(q,r)=>r?.type==='final'?'Финалисты отвечают':questionType(q)==='stakeAll'?'Все игроки отвечают письменно':questionType(q)==='stake'?'Победитель аукциона отвечает':questionType(q)==='bagcat'?'Получатель кота отвечает':questionType(q)==='noRisk'?'Выбравший вопрос отвечает':'Игроки отвечают';
 export const catSettings=q=>q.cat??{theme:'',selectionMode:'exceptCurrent',price:{minimum:0,maximum:0,step:0}};
 export function catSettingsError(cat){
  if(!cat||typeof cat.theme!=='string'||!['any','exceptCurrent'].includes(cat.selectionMode))return 'Проверьте тему и правило передачи кота';
@@ -32,7 +34,7 @@ export function finalRoundError(r){
  if(r.themes.some(t=>questionType(t.questions[0])!=='simple'))return 'В финале используются скрытые ставки всех игроков. Сначала смените тип вопросов на обычный.';
  return '';
 }
-export const step=(type='text',value='')=>({id:uid(),type,value,duration:0,wait:true});
+export const step=(type='text',value='')=>({id:uid(),type:type==='replic'?'text':type,value,duration:0,wait:true,...(type==='replic'?{placement:'replic'}:{})});
 export const question=(price=100,text='',answer='')=>({id:uid(),type:'simple',price,answer,alternatives:'',wrong:'',comment:'',source:'',steps:[step('text',text),step('answer')]});
 export const theme=(name='Новая тема',base=100)=>({id:uid(),name,questions:Array.from({length:5},(_,i)=>question((i+1)*base))});
 export const questions=p=>p.rounds.flatMap(r=>r.themes.flatMap(t=>t.questions));
@@ -50,7 +52,7 @@ export function questionReadiness(q,r,media=new Map()){
  for(const [i,s]of q.steps.entries()){
   if(!Number.isInteger(s.duration)||s.duration<0||s.duration>35999)eventErrors.push({message:'некорректная длительность шага',stepId:s.id,field:'duration',detail:`Событие ${i+1}: задайте время от 0 до 35999 сек`});
   if(s.type==='image'&&s.caption?.trim()&&s.duration===1)eventErrors.push({message:'для изображения с подписью нужно не менее 2 сек',stepId:s.id,field:'duration',detail:`Событие ${i+1}: задайте от 2 сек или время по настройкам игры`});
-  if(s.type==='text'&&!s.value.trim())eventErrors.push({message:'пустой текстовый шаг',stepId:s.id,field:'value',detail:`Событие ${i+1}: добавьте текст`});
+  if(s.type==='text'&&!s.value.trim())eventErrors.push({message:stepKind(s)==='replic'?'пустое слово ведущего':'пустой текстовый шаг',stepId:s.id,field:'value',detail:`Событие ${i+1}: ${stepKind(s)==='replic'?'добавьте слово ведущего':'добавьте текст'}`});
   if(['image','audio','video'].includes(s.type)&&!media.has(s.mediaId))eventErrors.push({message:'не загружен медиафайл',stepId:s.id,field:'media',detail:`Событие ${i+1}: загрузите файл`});
  }
  const typeErrors=[];

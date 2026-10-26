@@ -83,3 +83,14 @@ test('imported public-price cat can switch to secret and back without changing o
  // An old draft without the new field keeps the former hidden-theme behavior.
  delete rq.cat.showBeforeTransfer;assert.match(contentXML(result.pack),/type="secret"/);
 });
+
+test('SIQ 5 no-risk round-trips nominal price, timer, metadata and embedded reveal media',async()=>{
+ const p=initial(),q=p.rounds[0].themes[0].questions[0];q.type='noRisk';q.price=350;q.steps[1].duration=18;q.alternatives='Вариант';q.comment='Ведущему';q.source='Источник';q.wrong='Ошибка';
+ const image={id:crypto.randomUUID(),type:'image',value:'',duration:4,wait:true,mediaId:'no-risk-image',filename:'Ответ.png'};q.steps.push(image);
+ const media=new Map([[image.mediaId,new Blob([new Uint8Array([2,4,6])],{type:'image/png'})]]),before=structuredClone(q);
+ const result=importSIQ(await exportSIQ(p,media)),copy=first(result);
+ for(const key of ['type','price','answer','alternatives','comment','source','wrong'])assert.equal(copy[key],q[key]);
+ assert.deepEqual(copy.steps.map(s=>s.type),['text','answer','image']);assert.equal(copy.steps[1].duration,18);
+ assert.deepEqual([...new Uint8Array(await result.media.get(copy.steps[2].mediaId).arrayBuffer())],[2,4,6]);
+ const again=first(importSIQ(await exportSIQ(result.pack,result.media)));assert.equal(again.type,'noRisk');assert.equal(again.price,350);assert.equal(again.steps[1].duration,18);assert.deepEqual(q,before);
+});

@@ -112,8 +112,8 @@ export function importSIQ(bytes,decisions={}){
     if(decisions.clearQuestions?.has(target.key)){t.questions.push(emptyQuestion(qe,r.type==='final'));continue;}
     const canRepair=isPlainFinalOther(qe,r.type,version,qt);
     const repairFinalOther=canRepair&&decisions.repairQuestions?.has(target.key);
-    const type=repairFinalOther?'simple':version===5&&qt==='stakeAll'?(r.type==='final'?'simple':'stakeAll'):version===5&&['secret','secretPublicPrice'].includes(qt)?'bagcat':qt==='stake'||qt==='auction'&&(version===4||legacyType&&!qe.getAttribute('type'))?'stake':(r.type==='final'&&qt==='stakeAll'||['simple','default','withButton',''].includes(qt))?'simple':null;
-    if(!type)report(location,`Тип вопроса «${qt}» (SIQ ${version}) пока не поддерживается. Доступны обычные вопросы, аукционы, скрытые ставки всех игроков SIQ 5 и коты SIQ 5 «secret» и «secretPublicPrice».`,'question-type',{canRepair});
+    const type=repairFinalOther?'simple':version===5&&qt==='noRisk'?'noRisk':version===5&&qt==='stakeAll'?(r.type==='final'?'simple':'stakeAll'):version===5&&['secret','secretPublicPrice'].includes(qt)?'bagcat':qt==='stake'||qt==='auction'&&(version===4||legacyType&&!qe.getAttribute('type'))?'stake':(r.type==='final'&&qt==='stakeAll'||['simple','default','withButton',''].includes(qt))?'simple':null;
+    if(!type)report(location,`Тип вопроса «${qt}» (SIQ ${version}) пока не поддерживается. Доступны обычные вопросы, аукционы, скрытые ставки всех игроков SIQ 5, вопросы «Без риска» SIQ 5 и коты SIQ 5 «secret» и «secretPublicPrice».`,'question-type',{canRepair});
     if(child(qe,'script'))report(location,'Собственный сценарий <script> нельзя перенести без потери игровой логики.','script');
     for(const param of children(legacyType,'param'))report(location,`Старый параметр типа «${param.getAttribute('name')||'без имени'}» со значением «${txt(param)}» пока не поддерживается.`,'legacy-param');
     const questionInfo=child(qe,'info'),answers=children(child(qe,'right'),'answer').map(txt);

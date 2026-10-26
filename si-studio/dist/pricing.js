@@ -44,3 +44,13 @@ export function applyRoundSettings(r,settings){
   for(const t of r.themes)for(const q of t.questions)q.price=r.questionPrice;
  }else delete r.questionPrice;
 }
+
+// Prepare the complete replacement before touching the theme or history.
+export function resizedThemeQuestions(p,r,t,count){
+ if(r.type==='final'&&count===t.questions.length)return [...t.questions];
+ if(!Number.isSafeInteger(count)||count<1||count>Math.max(100,t.questions.length))throw Error('Укажите целое количество вопросов от 1 до '+Math.max(100,t.questions.length)+'.');
+ if(r.type==='final'&&count!==t.questions.length)throw Error('В финальной теме должен быть один вопрос.');
+ const kept=t.questions.slice(0,count);
+ for(let i=kept.length;i<count;i++)kept.push(question(newQuestionPrice(p,r,i)));
+ return kept;
+}

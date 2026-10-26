@@ -35,7 +35,14 @@ test('cat summary updates live for theme, recipient, disclosure and price using 
 test('settings action precedes the heading and auction mode is not repeated in its details',()=>{
  const {context,q}=editor();
  const cat=context.questionTypeHTML(q);assert.match(cat,/data-action="cat-settings"/);assert.ok(!cat.includes('Параметры кота'));
- q.type='stake';const auction=context.questionTypeHTML(q);assert.match(auction,/data-action="auction-settings"/);assert.ok(!auction.includes('Параметры аукциона'));
+ q.type='stake';const auction=context.questionTypeHTML(q);assert.match(auction,/studio-auction-switch studio-binary-switch/);assert.ok(!auction.includes('data-action="auction-settings"'));assert.ok(!auction.includes('Параметры аукциона'));
  assert.equal((auction.match(/Открытые торги/g)||[]).length,1);
- q.type='stakeAll';assert.equal((context.questionTypeHTML(q).match(/Скрытые ставки всех игроков/g)||[]).length,1);
+ assert.equal((auction.match(/data-action="select-auction-mode"/g)||[]).length,2);assert.match(auction,/data-second="false"/);
+ q.type='stakeAll';assert.match(context.questionTypeHTML(q),/data-second="true"/);assert.equal((context.questionTypeHTML(q).match(/Скрытые ставки/g)||[]).length,1);
+});
+
+test('no-risk editor explains the chooser and reward without auction or cat settings',()=>{
+ const {context,q}=editor();q.type='noRisk';q.price=350;const html=context.questionTypeHTML(q);
+ assert.match(html,/Тип вопроса: Без риска/);assert.match(html,/Отвечает выбравший вопрос/);assert.match(html,/700/);assert.match(html,/без потери очков/);
+ assert.doesNotMatch(html,/studio-mode-panel|select-auction-mode|data-action="cat-settings"/);
 });

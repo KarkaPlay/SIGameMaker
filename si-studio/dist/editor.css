@@ -116,8 +116,6 @@ dialog.studio-settings-popover::backdrop{background:transparent;backdrop-filter:
 .studio-final-question{align-items:flex-start;flex-direction:column;justify-content:center;gap:5px;text-align:left;min-width:0;min-height:70px;padding:12px 16px;width:100%}
 .studio-final-question>span{font-size:16px;line-height:1.4;overflow-wrap:anywhere}
 .studio-final-question>small{font-size:14px;font-weight:400;line-height:1.4;opacity:.8}
-.studio-final-theme-edit{width:28px;height:32px;align-self:center;display:grid;place-items:center;border-radius:6px}
-.studio-final-theme-edit svg{width:18px;height:18px}
 .studio-final-board .studio-add-theme{width:100%;height:auto;min-height:42px;font-size:14px}
 .studio-final-rules{margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid #e4eaf2;color:#62748c;font-size:14px;line-height:1.5}
 .studio-final-rules strong{color:#435976;font-weight:600}.studio-final-rules p{margin-top:6px}.studio-final-rules button{margin-top:10px}
@@ -385,9 +383,6 @@ dialog.studio-media-dialog{width:min(1120px,calc(100vw - 64px));height:min(760px
 .library-toolbar{height:72px;flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px}
 .library-toolbar h3{font-size:16px;white-space:nowrap}
 .library-toolbar h3 span{font-weight:400;color:#8692a4}
-.library-view-switch{display:flex;padding:3px;border-radius:8px;background:#f0f3f8;gap:3px}
-.library-view-switch button{padding:7px 13px;border-radius:6px;color:#6c7a90}
-.library-view-switch button[aria-pressed="true"]{background:white;color:#315cdb;box-shadow:0 1px 4px #1b315517}
 .library-body{flex:1;min-height:0;min-width:0}
 .library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));align-content:start;gap:18px;padding:4px 24px 24px;overflow-y:auto}
 .library-file{display:flex;flex-direction:column;gap:8px;min-width:0;text-align:left;padding:8px;border:1px solid #e5eaf2;border-radius:10px;background:#fff}
@@ -419,8 +414,6 @@ dialog.studio-media-dialog{width:min(1120px,calc(100vw - 64px));height:min(760px
 
 .media-library{position:relative;isolation:isolate}
 .library-toolbar{gap:12px;padding-left:20px;padding-right:20px}
-.library-group-control{display:flex;align-items:center;gap:8px;margin-left:auto;min-width:0;font-size:14px;color:#6c7a90}
-.library-group-control select{font-size:14px;padding:8px 10px;max-width:175px;background:#fff}
 .library-grid.is-grouped{display:block}
 .library-group{min-width:0;margin:0 0 24px}
 .library-group:last-child{margin-bottom:0}
@@ -440,7 +433,6 @@ dialog.studio-media-dialog{width:min(1120px,calc(100vw - 64px));height:min(760px
 .library-motion-overlay{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:10}
 .library-motion-flight{position:absolute;left:0;top:0;display:block;max-width:none;max-height:none;transform-origin:0 0;pointer-events:none;will-change:transform,opacity}
 .library-motion-hero{z-index:2}
-@media(max-width:1200px){.library-group-control>span{display:none}}
 @media(prefers-reduced-motion:reduce){.library-file,.library-view-switch button{transition:none}}
 
 /* Gallery pages keep their original proportions inside one clipped viewport. */
@@ -477,12 +469,6 @@ dialog.studio-media-dialog{width:min(1120px,calc(100vw - 64px));height:min(760px
 .library-preview-media [data-library-source]:not([data-library-ready]){opacity:0}
 .library-body.library-is-empty{display:flex;flex-direction:row;align-items:center;justify-content:center;padding:24px;overflow:auto}
 .library-body.library-is-empty>.library-empty{flex:0 1 420px;width:100%;height:auto;min-height:0;margin:0;text-align:center;align-self:center;grid-column:auto}
-.library-usage{flex:none;border-top:1px solid #e5eaf2;padding-top:10px;font-size:14px;line-height:1.5;color:#60738f;max-height:142px;overflow:auto}
-.library-usage summary{cursor:pointer;font-weight:550}
-.library-usage ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
-.library-usage li{display:flex;align-items:center;justify-content:space-between;gap:16px}
-.library-usage li>span{min-width:0;overflow-wrap:anywhere}
-.library-usage button{flex:none;padding:7px 10px;border:1px solid #d9e3f2;background:#f3f6fc;color:#315cdb;border-radius:7px;font-size:14px}
 .studio-mode-panel{border-top:1px solid #e2e8f1;padding-top:16px;margin-top:2px;min-width:0}
 .studio-mode-panel>header{display:flex;align-items:center;justify-content:flex-start;gap:16px;margin-bottom:14px}
 .studio-mode-panel h3{font-size:14px;font-weight:600;color:#526681}
@@ -563,7 +549,7 @@ dialog.studio-demo-dialog{width:min(1360px,calc(100vw - 32px));height:calc(100dv
 .studio-demo-dialog .demo-player strong{font-size:16px;font-weight:600;line-height:1.3}
 .studio-demo-dialog .demo-player [data-demo-score]{font-size:20px;line-height:1.3;font-weight:700;color:#315cdb;font-variant-numeric:tabular-nums}
 .demo-bubble-slot{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:220px;max-width:26vw;display:flex;justify-content:center;pointer-events:none;z-index:2}
-.demo-bubble{position:relative;max-width:100%;padding:10px 14px;border-radius:10px;border:1px solid #d8e2f1;background:#fff;color:#344b6d;box-shadow:0 5px 22px #243d6720;text-align:center;font-size:14px;line-height:1.4;overflow-wrap:anywhere;max-height:100px;overflow:auto}
+.demo-bubble{position:relative;max-width:100%;padding:10px 14px;border-radius:10px;border:1px solid #d8e2f1;background:#fff;color:#344b6d;box-shadow:0 5px 22px #243d6720;text-align:center;font-size:14px;line-height:1.4;overflow-wrap:anywhere;max-height:min(220px,30vh);overflow:auto}
 .demo-bubble b{display:block;font-size:16px;margin-top:3px}
 .demo-bubble.correct{background:#e7f6ec;border-color:#8dcca1;color:#2d7746}
 .demo-bubble.wrong{background:#fff0ed;border-color:#e2a89c;color:#a34a3d}
@@ -573,9 +559,6 @@ dialog.studio-demo-dialog{width:min(1360px,calc(100vw - 32px));height:calc(100dv
 @media(prefers-reduced-motion:reduce){.preview-time-frame rect{transition:none}}
 
 /* Answer disclosure is an explicit choice; the standard event has no move/delete controls. */
-.studio-reveal-mode{display:flex;gap:4px;padding:4px;background:#edf1f6;border-radius:10px;margin:12px 0 8px}
-.studio-reveal-mode button{flex:1;min-width:0;font-size:14px;padding:10px 8px;border:0;border-radius:7px;background:transparent;color:#53647d}
-.studio-reveal-mode button[aria-pressed="true"]{background:#fff;color:#2455c2;box-shadow:0 1px 4px #213b5c16}
 .studio-image-caption{display:flex;flex-direction:column;gap:8px;margin-top:16px;font-size:14px}
 .studio-image-caption textarea{font-size:16px;line-height:1.4;resize:vertical;min-height:76px}
 .studio-image-caption>span{font-size:14px;line-height:1.4;color:#68778b}
@@ -620,3 +603,123 @@ dialog.studio-demo-dialog{width:min(1360px,calc(100vw - 32px));height:calc(100dv
 .studio-interlude-pricing[hidden]{display:none}
 .studio-interlude-pricing p{font-size:14px;line-height:1.5;color:#8190a5}
 .studio-interlude-pricing label{margin-bottom:0}
+
+/* Numeric fields follow the constructor: separate minus, input and plus hit areas. */
+.settings-form .studio-number-field{display:flex;flex-direction:column;gap:8px;min-width:0}
+.settings-form .studio-number-field>label{margin:0;font-size:14px}
+.settings-form .studio-number-control{display:grid;grid-template-columns:24px minmax(0,1fr) 24px;gap:4px;align-items:center;width:100%;max-width:138px}
+.settings-form .studio-number-control>button{position:static;display:grid;place-items:center;box-sizing:border-box;width:24px;min-width:24px;max-width:24px;height:32px;min-height:32px;margin:0;padding:0;overflow:hidden;transform:none;line-height:1;font-size:18px;border-radius:6px;color:#6b83aa}
+.settings-form .studio-number-control>button:hover:not(:disabled){background:#dce8ff;color:#315cdb}
+.settings-form .studio-number-control>button:active:not(:disabled){transform:none}
+.settings-form .studio-number-control>button::before,.settings-form .studio-number-control>button::after{content:none}
+.settings-form .studio-number-control>input{width:100%;min-width:0;max-width:100%;min-height:44px;margin:0;padding:6px 3px;text-align:center;font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;border-color:transparent;border-radius:9px;background:#fff;appearance:textfield}
+.settings-form .studio-number-control>input::-webkit-inner-spin-button,.settings-form .studio-number-control>input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.settings-form .studio-number-control>input:hover:not(:disabled){background:#f3f6fc}
+.settings-form .studio-number-control>input:focus{border-color:#8ea7ef}
+.studio-cat-editor .form-row>.studio-number-field{min-width:0}
+
+/* The theme plaque is one keyboard-accessible settings button. */
+button.studio-theme-name{text-align:left;width:100%}
+button.studio-theme-name:hover{background:#ffffff12;border-color:#ffffff24}
+button.studio-theme-name>.studio-theme-edit{pointer-events:none;font-style:normal;transform:none}
+.studio-named-settings .dialog-heading{align-items:flex-start;gap:8px}
+.studio-settings-popover .studio-settings-title{flex:1;min-width:0;width:100%;min-height:44px;padding:5px 7px;border-color:transparent;background:transparent;color:#36547e;font-size:23px;line-height:1.25;letter-spacing:-.4px;font-weight:600}
+.studio-settings-popover .studio-settings-title:hover{background:#edf3ff}
+.studio-settings-popover .studio-settings-title:focus{background:#fff;border-color:#8aa6e9}
+.studio-named-settings .dialog-heading .icon-button{margin-top:8px}
+
+/* The package title is the single entry point to its settings. */
+button.studio-pack-name{display:flex;flex:0 1 auto;min-width:0;width:max-content;align-items:center;gap:8px;padding:8px;border-radius:7px;cursor:pointer}
+button.studio-pack-name>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+button.studio-pack-name>svg{display:block;flex-shrink:0;width:16px;height:16px;color:#71829a}
+button.studio-pack-name:hover{background:#f0f4fb}
+
+/* Give long package names more of the available header space. */
+button.studio-pack-name{max-width:420px}
+@media(max-width:1350px){button.studio-pack-name{max-width:360px}}
+
+/* Package options use the constructor's counter and two-position language switch. */
+.studio-settings-popover:has([data-type="pack"]){width:440px}
+.studio-pack-options{align-items:flex-start;gap:28px}
+.studio-pack-options>.studio-number-field{flex:0 0 100px}
+.studio-pack-options .studio-number-control{max-width:100px}
+.studio-pack-options .studio-number-control>input{min-height:40px}
+.studio-language-group{display:flex;flex-direction:column;gap:8px;min-width:0;flex:0 1 180px}
+.studio-language-label{font-size:14px;color:#8794a7}
+/* Shared two-state switch: size changes with labels, appearance stays consistent. */
+.studio-binary-switch{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;width:180px;max-width:100%;height:40px;border-radius:25px;background:#edf3ff;border:1px solid #d9e3f5;padding:4px;color:#71829a;isolation:isolate;overflow:hidden}
+.studio-binary-thumb{position:absolute;z-index:-1;left:4px;top:4px;bottom:4px;width:calc(50% - 4px);border-radius:20px;background:#fff;box-shadow:0 2px 8px #10256818;transform:translateX(0);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.studio-binary-switch:is([aria-pressed=true],[data-second=true])>.studio-binary-thumb{transform:translateX(100%)}
+.studio-binary-switch>.studio-binary-option{display:grid;place-items:center;position:relative;min-width:0;height:100%;padding:0 8px;font-size:14px;font-weight:400;text-align:center;white-space:nowrap;border:0;border-radius:20px;background:transparent;color:inherit;transition:color .2s}
+.studio-binary-switch[aria-pressed=false]>[data-state=first],.studio-binary-switch[aria-pressed=true]>[data-state=second],.studio-binary-switch>.studio-binary-option[aria-pressed=true]{color:#2e55b3;font-weight:600}
+.studio-binary-switch>button:focus-visible{outline-offset:-2px}
+.studio-reveal-mode{width:400px;margin:12px 0 8px}
+@media(prefers-reduced-motion:reduce){.studio-binary-thumb,.studio-binary-switch>.studio-binary-option{transition:none}}
+
+.studio-settings-popover #settings-form[data-type="pack"]>.dialog-footer{margin-top:24px}
+
+.studio-auction-switch{width:340px}
+
+/* The library follows the package hierarchy: rounds, then themes, then files. */
+.library-view-switch{width:180px;flex-shrink:0;margin-left:auto}
+.library-round{min-width:0;margin-bottom:32px}
+.library-round:last-child{margin-bottom:0}
+.library-round+.library-round{border-top:1px solid #dfe6f1;padding-top:24px}
+.library-round-title{margin:0 0 20px;font-size:18px;line-height:1.4;font-weight:650;color:#36547e;overflow-wrap:anywhere}
+.library-round-themes{padding-left:16px;border-left:2px solid #edf1f8}
+.library-round .library-group-title{font-size:15px;line-height:1.5;margin:0 0 12px;white-space:normal;overflow-wrap:anywhere}
+.library-round .library-group{margin-bottom:24px}
+.library-round .library-group:last-child{margin-bottom:0}
+.library-strip-round{display:flex;align-items:flex-start;gap:16px;flex:none;margin:0;max-width:none}
+.library-strip-round+.library-strip-round{border-top:0;border-left:1px solid #dfe6f1;padding:0 0 0 20px;margin-left:10px}
+.library-strip-round .library-round-title{flex:none;font-size:16px;line-height:21px;margin:0;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.library-strip-round .library-round-themes{display:flex;gap:16px;padding:0;border:0}
+.library-strip-round .library-group{margin:0}
+.library-strip-round .library-group-title{font-size:14px;max-width:240px;margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Usage destinations stay in a compact window instead of taking preview height. */
+.library-preview-caption{gap:12px}
+.library-preview-caption .library-go{flex:none;padding:7px 10px;border:1px solid #d9e3f2;background:#f3f6fc;color:#315cdb;border-radius:7px;font-size:14px}
+dialog.library-usage-dialog{position:fixed;inset:auto;margin:0;width:420px;max-width:calc(100vw - 24px);max-height:min(360px,calc(100dvh - 24px));padding:16px;border:1px solid #e2e7ef;border-radius:12px;background:#fff;box-shadow:0 8px 24px #2035551a,0 24px 64px #20355514}
+dialog.library-usage-dialog::backdrop{background:transparent;backdrop-filter:none}
+.library-usage-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.library-usage-heading h3{font-size:16px;font-weight:600}
+.library-usage-heading>button{flex:none;width:28px;height:28px;font-size:22px;border-radius:6px;color:#71829a}
+.library-usage-dialog ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.library-usage-dialog li{display:grid;grid-template-columns:minmax(0,1fr) max-content 32px;align-items:center;gap:12px;min-height:38px;padding:4px 0;font-size:14px;color:#60738f}
+.library-usage-dialog li+li{border-top:1px solid #edf1f7}
+.library-usage-theme{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.library-usage-dialog li>button{width:32px;height:32px;border:1px solid #d9e3f2;background:#f3f6fc;color:#315cdb;border-radius:7px;font-size:18px}
+.library-usage-dialog button:hover{background:#e8effc}
+
+/* All question types share one heading layout and a fixed actions corner. */
+.studio-question-heading{display:grid;grid-template-columns:minmax(0,1fr) max-content;align-items:start;gap:16px;padding:21px 22px;min-height:114px}
+.studio-question-heading>div:first-child{min-width:0}
+.studio-question-heading .studio-question-theme{line-height:20px;margin-bottom:8px}
+.studio-question-heading h1{min-height:44px;flex-wrap:nowrap}
+.studio-question-heading .question-status{flex:none}
+.studio-question-heading .studio-question-actions{align-self:start;justify-self:end;margin-top:32px}
+
+/* The final topic title fits its text and shrinks within the available title row. */
+.studio-final-title-field{position:relative;display:inline-grid;flex:0 1 auto;min-width:0;max-width:100%;margin-left:-7px}
+.studio-final-title-measure{visibility:hidden;min-width:0;overflow:hidden;white-space:pre;padding:5px 7px;border:1px solid transparent;font-size:23px;line-height:1.35;letter-spacing:-.4px;font-weight:600}
+.studio-final-question-heading .studio-final-theme-title{position:absolute;inset:0;width:100%;height:100%;min-width:0;padding:5px 7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-color:transparent;background:transparent;color:#36547e;font-size:23px;line-height:1.35;letter-spacing:-.4px;font-weight:600}
+.studio-final-theme-title:hover{background:#edf3ff}
+.studio-final-question-heading .studio-final-theme-title:focus{background:#fff;border-color:#8aa6e9}
+
+/* No-risk questions keep their nominal price and completion indicator. */
+.studio-question-cell.studio-question-no-risk{padding-top:20px;padding-bottom:8px;border-color:#93d7cd99}
+.studio-question-no-risk:not([aria-current]){background:#93d7cd14}
+.studio-question-no-risk .studio-question-kind{color:#a7e4db}
+.studio-question-no-risk[aria-current] .studio-question-kind{color:#28796c}
+
+.studio-step-symbol.replic{background:#eceeef;color:#626970}
+.studio-replic-hint{font-size:14px;line-height:1.6;color:#7c8a9f;margin-top:12px}
+.demo-showman-replic{position:absolute;z-index:3;left:16px;top:64px;width:min(320px,calc(100% - 32px));max-height:calc(100% - 88px);box-shadow:0 12px 36px #1e293b29;padding:12px 16px;border:1px solid #dfe2e5;border-radius:12px;background:#f5f6f7;font-size:14px;min-width:0}
+.demo-showman-replic strong{color:#626970;font-size:14px}
+.demo-showman-replic p{margin-top:8px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;max-height:min(220px,30vh);overflow:auto}
+
+.studio-type-replic{--step-fill:#f2f3f4;--step-border:#dce0e3;--step-ink:#626970}
+.demo-play-area{position:relative}
+.demo-showman-replic header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.demo-showman-replic[hidden]{display:none}

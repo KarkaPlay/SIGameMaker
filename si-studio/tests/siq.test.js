@@ -20,3 +20,11 @@ test('custom duration endpoints export as seconds and default mode omits timing'
 
 test('auction exports native stake type with nominal price, timer and reveal; old drafts remain simple',()=>{const p=initial(),q=p.rounds[0].themes[0].questions[0];delete q.type;assert.match(contentXML(p),/<question price="100" type="simple">/);q.type='stake';q.price=500;q.steps[1].duration=20;q.steps.push(step('text','Пояснение'));assert.deepEqual(issues(p),[]);const xml=contentXML(p);assert.match(xml,/<question price="500" type="stake">/);assert.match(xml,/<param name="answerDuration">20<\/param>/);assert.match(xml,/<param name="answer" type="content">/);assert.doesNotMatch(xml,/<script|name="stake"/);writeFileSync(join(tmp,'auction.xml'),xml);execFileSync('xmllint',['--noout','--schema','docs/siq_5.xsd',join(tmp,'auction.xml')]);});
 test('unsupported question type is rejected by validation and direct export',()=>{const p=initial();for(const type of ['secret','auction','forAll',null,'']){p.rounds[0].themes[0].questions[0].type=type;assert.ok(issues(p).some(x=>x.message.includes('тип вопроса')));assert.throws(()=>contentXML(p),/Неподдерживаемый тип/);}});
+
+test('no-risk exports native type and nominal price without scripts or double multiplication',()=>{
+ const p=initial(),q=p.rounds[0].themes[0].questions[0];q.type='noRisk';q.price=350;q.steps[1].duration=18;
+ assert.deepEqual(issues(p),[]);const xml=contentXML(p);assert.match(xml,/<question price="350" type="noRisk">/);assert.match(xml,/<param name="answerDuration">18<\/param>/);assert.doesNotMatch(xml,/<script|name="price"|name="stake"/);
+ writeFileSync(join(tmp,'no-risk.xml'),xml);execFileSync('xmllint',['--noout','--schema','docs/siq_5.xsd',join(tmp,'no-risk.xml')]);
+ p.rounds[0].type='final';for(const t of p.rounds[0].themes)t.questions.length=1;
+ assert.ok(issues(p).some(issue=>issue.message.includes('финал')));assert.throws(()=>contentXML(p),/финал/);
+});

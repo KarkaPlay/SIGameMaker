@@ -113,7 +113,7 @@ export function createLibraryMotion(root,{
   if(!animations.length){enter();return;}
   // Text and surfaces fade in at their final size; they are never scaled with the picture.
   const viewport=root.querySelector('.library-body').getBoundingClientRect();
-  for(const node of root.querySelectorAll('.library-file strong,.library-file small,.library-preview-caption,.library-group-title')){
+  for(const node of root.querySelectorAll('.library-file strong,.library-file small,.library-preview-caption,.library-group-title,.library-round-title')){
    if(intersects(node.getBoundingClientRect(),viewport))track(node,[{opacity:0,transform:'translateY(5px)'},{opacity:1,transform:'none'}],{duration:200,delay:150,easing,fill:'backwards'});
   }
   const strip=root.querySelector('.library-filmstrip');if(strip)track(strip,[{opacity:0},{opacity:1}],{duration:260,delay:100,easing,fill:'backwards'});
