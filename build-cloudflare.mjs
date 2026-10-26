@@ -22,7 +22,7 @@ async function collect(directory, prefix = '') {
 
 try {
   const files = await collect(source);
-  for (const required of ['about/index.html', 'about.css', 'about.js', 'robots.txt', 'sitemap.xml', '404.html']) {
+  for (const required of ['about/index.html', 'about.css', 'about.js', 'robots.txt', 'sitemap.xml', '404.html', '_headers']) {
     if (!files.includes(join(...required.split('/')))) {
       throw new Error(`В исходниках отсутствует публичная страница или файл индексации: ${required}`);
     }

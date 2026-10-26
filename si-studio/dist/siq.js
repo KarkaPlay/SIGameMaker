@@ -52,8 +52,15 @@ function isPlainFinalOther(qe,roundType,version,type){
 }
 export function importSIQ(bytes,decisions={}){
  if(bytes.length>250*1024*1024)fail('Пак больше 250 МБ. Разделите его на несколько паков.','archive-size');
- let files,expanded=0;
- try{files=unzipSync(bytes,{filter:f=>{expanded+=f.originalSize;if(expanded>500*1024*1024)fail('Распакованный пак превышает 500 МБ.','expanded-size');return true;}});}catch(err){if(err instanceof SIQImportError)throw err;fail('Не удалось распаковать файл: архив ZIP повреждён, зашифрован или имеет неподдерживаемое сжатие.','archive');}
+ let files,expanded=0,entries=0;const seen=new Set();
+ try{files=unzipSync(bytes,{filter:f=>{
+  if(++entries>10000)fail('В архиве слишком много файлов.','archive-entries');
+  if(seen.has(f.name)||f.name==='__proto__')fail('В архиве повторяются или недопустимы имена файлов.','archive-names');seen.add(f.name);
+  if(f.size>bytes.length||f.compression===0&&f.size!==f.originalSize)fail('Размер файла в архиве указан неверно.','archive-size-mismatch');
+  expanded+=f.originalSize;if(expanded>500*1024*1024)fail('Распакованный пак превышает 500 МБ.','expanded-size');
+  if(archiveKey(f.name)==='content.xml'&&f.originalSize>16*1024*1024)fail('Описание пака content.xml превышает 16 МБ.','xml-size');
+  return true;
+ }});}catch(err){if(err instanceof SIQImportError)throw err;fail('Не удалось распаковать файл: архив ZIP повреждён, зашифрован или имеет неподдерживаемое сжатие.','archive');}
  const names=new Map();for(const path of Object.keys(files)){const key=archiveKey(path);if(!names.has(key))names.set(key,[]);names.get(key).push(path);}
  function resolve(path){if(Object.hasOwn(files,path))return path;const matches=names.get(archiveKey(path))||[];if(matches.length>1)throw Error(`Неоднозначное имя файла «${path}»: ${matches.join(', ')}. Переименуйте дубликаты в исходном паке.`);return matches[0];}
  let content;try{content=resolve('content.xml');}catch(err){fail(err.message,'ambiguous-file');}if(!content)fail('В корне архива не найден content.xml — файл с описанием пака.','missing-content');
