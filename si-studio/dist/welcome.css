@@ -75,6 +75,11 @@
 .welcome-page .welcome-merge{background:linear-gradient(130deg,#fff,#f1f4ff);border-color:#d8e0f6}
 .welcome-page .welcome-merge .welcome-action-icon{background:#e9edfc;color:#6577b7}
 .welcome-page .welcome-explore{min-height:58px;margin:0;flex-wrap:nowrap}
+.welcome-page .welcome-support{display:inline-flex;align-items:center;gap:8px;min-height:40px;margin-left:12px;padding:8px 14px;border:1px solid #d4def2;border-radius:11px;background:#edf3ff;color:#3159b3;font-weight:600;white-space:nowrap;text-decoration:none;transition:transform .24s cubic-bezier(.2,.75,.25,1),background-color .24s,border-color .24s,box-shadow .24s}
+.welcome-page .welcome-support:hover{transform:translateY(-2px);background:#e3ecff;border-color:#aabfe8;box-shadow:0 7px 16px #315cdb18;text-decoration:none}
+.welcome-support-arrow{transition:transform .24s cubic-bezier(.2,.75,.25,1)}
+.welcome-support:hover .welcome-support-arrow{transform:translate(2px,-2px)}
+.welcome-support:focus-visible{outline:3px solid #315cdb;outline-offset:3px}
 .welcome-page .welcome-footer{min-height:52px;padding:14px 36px;flex-shrink:0}
 .welcome-page .welcome-footer>span:last-child{display:inline}
 .welcome-privacy svg{width:16px;height:16px;flex-shrink:0}
