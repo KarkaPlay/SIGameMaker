@@ -1,7 +1,7 @@
 import {revealMode,expandCaptions,captionRecords,restoreCaptions} from './scenario.js';
 import {pricingMetadata,restorePricing} from './pricing.js';
 import {zipSync,unzipSync,strToU8,strFromU8} from './vendor/fflate.js';
-import {uid,step,question,questionTypes,questionType,customRevealError,finalRoundError,interludeRoundError,catSettings,catSettingsError} from './model.js';
+import {uid,step,question,questionTypes,questionType,customRevealError,finalRoundError,interludeRoundError,catSettings,catSettingsError,validQuestionPrice,roundOrderError} from './model.js';
 const ns='https://github.com/VladimirKhil/SI/blob/master/assets/siq_5.xsd';
 export const escapeXML=v=>String(v??'').replace(/[<>&"']/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&apos;'}[c])).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');
 const tag=(n,v)=>`<${n}>${escapeXML(v)}</${n}>`;
@@ -10,8 +10,32 @@ const filename=s=>`${s.mediaId}.${(s.filename?.split('.').pop()||'bin').replace(
 const duration=n=>[Math.floor(n/3600),Math.floor(n/60)%60,n%60].map(v=>String(v).padStart(2,'0')).join(':');
 function item(s){return `<item type="${s.type}"${s.mediaId?' isRef="True"':''}${s.placement?` placement="${escapeXML(s.placement)}"`:''}${s.duration?` duration="${duration(s.duration)}"`:''} waitForFinish="${s.wait===false?'False':'True'}">${escapeXML(s.mediaId?filename(s):s.value)}</item>`;}
 function catParams(q){if(questionType(q)!=='bagcat')return '';const cat=catSettings(q),error=catSettingsError(cat);if(error)throw Error(error);const p=cat.price;return `<param name="theme">${escapeXML(cat.theme)}</param><param name="selectionMode">${cat.selectionMode}</param><param name="price" type="numberSet"><numberSet minimum="${p.minimum}" maximum="${p.maximum}" step="${p.step}"/></param>`;}
-export function contentXML(p){for(const r of p.rounds){const error=interludeRoundError(r);if(error)throw Error(error);}for(const r of p.rounds)if(r.type==='final'){const error=finalRoundError(r);if(error)throw Error(error);}return `<?xml version="1.0" encoding="utf-8"?><package xmlns="${ns}" name="${escapeXML(p.name)}" version="5" id="${escapeXML(p.id)}" date="${new Date().toLocaleDateString('ru-RU',{timeZone:'Asia/Yerevan'})}" difficulty="${p.difficulty}" language="${escapeXML(p.language)}" generator="SIGameMaker"><info><authors>${p.author?tag('author',p.author):''}</authors>${tag('comments',p.description)}</info><rounds>${p.rounds.map(r=>`<round name="${escapeXML(r.name)}" type="${r.type==='interlude'?'standard':r.type}"><themes>${r.themes.map(t=>`<theme name="${escapeXML(t.name)}"><questions>${t.questions.map(q=>{const type=questionType(q);const revealError=customRevealError(q);if(revealError)throw Error(revealError);if(!Object.hasOwn(questionTypes,type))throw Error('Неподдерживаемый тип вопроса: '+type);if(q.steps.filter(s=>s.type==='answer').length>1)throw Error('Повторные попытки с подсказками пока не поддерживаются: SIGame раскрывает ответ после первого таймера');const marker=q.steps.findIndex(s=>s.type==='answer');const before=q.steps.slice(0,marker<0?undefined:marker).filter(s=>s.type!=='answer');const after=marker<0?[]:q.steps.slice(marker+1).filter(s=>s.type!=='answer');return `<question price="${r.type==='final'?0:q.price}"${r.type==='final'?'':` type="${type==='bagcat'?(catSettings(q).showBeforeTransfer?'secretPublicPrice':'secret'):type}"`}><info><sources>${q.source?tag('source',q.source):''}</sources>${tag('showmanComments',q.comment)}</info><params>${catParams(q)}<param name="question" type="content">${expandCaptions(before).map(item).join('')}</param>${q.steps.find(s=>s.type==='answer')?.duration?`<param name="answerDuration">${q.steps.find(s=>s.type==='answer').duration}</param>`:''}${revealMode(q)==='custom'?`<param name="answer" type="content">${expandCaptions(after).map(item).join('')}</param>`:''}</params><right>${[q.answer,...q.alternatives.split('\n')].filter(a=>a.trim()).map(a=>tag('answer',a.trim())).join('')}</right>${q.wrong?`<wrong>${q.wrong.split('\n').filter(a=>a.trim()).map(a=>tag('answer',a.trim())).join('')}</wrong>`:''}</question>`;}).join('')}</questions></theme>`).join('')}</themes></round>`).join('')}</rounds></package>`;}
-export async function exportSIQ(p,media){const files={'content.xml':strToU8(contentXML(p))};const captions=p.rounds.flatMap(r=>r.themes.flatMap(t=>t.questions)).map(captionRecords);if(captions.some(records=>records.length))files['SIStudio-captions.json']=strToU8(JSON.stringify({version:1,captions}));if(p.pricing||p.rounds.some(r=>Object.hasOwn(r,'priceMultiplier')||r.type==='interlude'))files['SIGameMaker.json']=strToU8(JSON.stringify(pricingMetadata(p)));for(const r of p.rounds)for(const t of r.themes)for(const q of t.questions)for(const s of q.steps)if(folder[s.type]&&s.mediaId){const blob=media.get(s.mediaId);if(!blob)throw Error('Не найден файл '+s.filename);files[`${folder[s.type]}/${filename(s)}`]=new Uint8Array(await blob.arrayBuffer());}return zipSync(files,{level:0});}
+function infoXML(info){if(!info)return '';return `<info>${['authors','sources'].map(key=>info[key]?`<${key}>${info[key].map(value=>tag(key==='authors'?'author':'source',value)).join('')}</${key}>`:'').join('')}${['comments','showmanComments','extension'].filter(key=>Object.hasOwn(info,key)).map(key=>tag(key,info[key])).join('')}</info>`;}
+function questionInfoXML(q){
+ const info={...q.info},sources=info.sources||[];
+ info.sources=q.source===sources.join('\n')?sources:q.source?[q.source]:[];
+ if(!q.info||Object.hasOwn(info,'showmanComments')||q.comment!==(info.comments||''))info.showmanComments=q.comment;
+ return infoXML(info);
+}
+export function contentXML(p){const orderError=roundOrderError(p.rounds);if(orderError)throw Error(orderError);for(const r of p.rounds)for(const t of r.themes)for(const q of t.questions)if(r.type!=='final'&&!validQuestionPrice(q.price))throw Error('Укажите целую стоимость от 0 до 2147483647.');for(const r of p.rounds){const error=interludeRoundError(r);if(error)throw Error(error);}for(const r of p.rounds)if(r.type==='final'){const error=finalRoundError(r);if(error)throw Error(error);}return `<?xml version="1.0" encoding="utf-8"?><package xmlns="${ns}" name="${escapeXML(p.name)}" version="5" id="${escapeXML(p.id)}" date="${new Date().toLocaleDateString('ru-RU',{timeZone:'Asia/Yerevan'})}" difficulty="${p.difficulty}" language="${escapeXML(p.language)}" generator="SIGameMaker"><info><authors>${p.author?tag('author',p.author):''}</authors>${tag('comments',p.description)}</info><rounds>${p.rounds.map(r=>`<round name="${escapeXML(r.name)}" type="${r.type==='interlude'?'standard':r.type}">${infoXML(r.info)}<themes>${r.themes.map(t=>`<theme name="${escapeXML(t.name)}">${infoXML(t.info)}<questions>${t.questions.map(q=>{const type=questionType(q);const revealError=customRevealError(q);if(revealError)throw Error(revealError);if(!Object.hasOwn(questionTypes,type))throw Error('Неподдерживаемый тип вопроса: '+type);if(q.steps.filter(s=>s.type==='answer').length>1)throw Error('Повторные попытки с подсказками пока не поддерживаются: SIGame раскрывает ответ после первого таймера');const marker=q.steps.findIndex(s=>s.type==='answer');const before=q.steps.slice(0,marker<0?undefined:marker).filter(s=>s.type!=='answer');const after=marker<0?[]:q.steps.slice(marker+1).filter(s=>s.type!=='answer');return `<question price="${r.type==='final'?0:q.price}"${r.type==='final'?'':` type="${type==='bagcat'?(catSettings(q).showBeforeTransfer?'secretPublicPrice':'secret'):type}"`}>${questionInfoXML(q)}<params>${catParams(q)}<param name="question" type="content">${expandCaptions(before).map(item).join('')}</param>${q.steps.find(s=>s.type==='answer')?.duration?`<param name="answerDuration">${q.steps.find(s=>s.type==='answer').duration}</param>`:''}${revealMode(q)==='custom'?`<param name="answer" type="content">${expandCaptions(after).map(item).join('')}</param>`:''}</params><right>${[q.answer,...q.alternatives.split('\n')].filter(a=>a.trim()).map(a=>tag('answer',a.trim())).join('')}</right>${q.wrong?`<wrong>${q.wrong.split('\n').filter(a=>a.trim()).map(a=>tag('answer',a.trim())).join('')}</wrong>`:''}</question>`;}).join('')}</questions></theme>`).join('')}</themes></round>`).join('')}</rounds></package>`;}
+const archiveLimit=250*1024*1024,xmlLimit=16*1024*1024;
+export async function exportSIQ(p,media){
+ const files={'content.xml':strToU8(contentXML(p))};
+ const captions=p.rounds.flatMap(r=>r.themes.flatMap(t=>t.questions)).map(captionRecords);
+ if(captions.some(records=>records.length))files['SIStudio-captions.json']=strToU8(JSON.stringify({version:1,captions}));
+ if(p.pricing||p.rounds.some(r=>Object.hasOwn(r,'priceMultiplier')||r.type==='interlude'))files['SIGameMaker.json']=strToU8(JSON.stringify(pricingMetadata(p)));
+ for(const r of p.rounds)for(const t of r.themes)for(const q of t.questions)for(const s of q.steps)if(folder[s.type]&&s.mediaId){
+  const blob=media.get(s.mediaId);if(!blob)throw Error('Не найден файл '+s.filename);
+  files[`${folder[s.type]}/${filename(s)}`]=blob;
+ }
+ if(files['content.xml'].length>xmlLimit)throw Error('Описание пака content.xml превышает 16 МБ. Разделите пак.');
+ if(Object.keys(files).length>10000)throw Error('В паке слишком много файлов. Разделите пак.');
+ // Stored ZIP entries use 76 header bytes plus two copies of the UTF-8 filename.
+ const size=22+Object.entries(files).reduce((total,[name,data])=>total+76+2*strToU8(name).length+(data.size??data.length),0);
+ if(size>archiveLimit)throw Error(`Пак больше 250 МБ. Удалите не менее ${Math.ceil((size-archiveLimit)/1024/1024)} МБ медиа или разделите пак.`);
+ for(const [name,data]of Object.entries(files))if(data instanceof Blob)files[name]=new Uint8Array(await data.arrayBuffer());
+ return zipSync(files,{level:0});
+}
 const children=(el,name)=>Array.from(el?.children||[]).filter(x=>x.localName===name);
 const child=(el,name)=>children(el,name)[0];const txt=el=>el?.textContent||'';
 function readCatParams(params){
@@ -51,14 +75,14 @@ function isPlainFinalOther(qe,roundType,version,type){
   Array.from(p.attributes).every(a=>['name','type'].includes(a.name)));
 }
 export function importSIQ(bytes,decisions={}){
- if(bytes.length>250*1024*1024)fail('Пак больше 250 МБ. Разделите его на несколько паков.','archive-size');
+ if(bytes.length>archiveLimit)fail('Пак больше 250 МБ. Разделите его на несколько паков.','archive-size');
  let files,expanded=0,entries=0;const seen=new Set();
  try{files=unzipSync(bytes,{filter:f=>{
   if(++entries>10000)fail('В архиве слишком много файлов.','archive-entries');
   if(seen.has(f.name)||f.name==='__proto__')fail('В архиве повторяются или недопустимы имена файлов.','archive-names');seen.add(f.name);
   if(f.size>bytes.length||f.compression===0&&f.size!==f.originalSize)fail('Размер файла в архиве указан неверно.','archive-size-mismatch');
   expanded+=f.originalSize;if(expanded>500*1024*1024)fail('Распакованный пак превышает 500 МБ.','expanded-size');
-  if(archiveKey(f.name)==='content.xml'&&f.originalSize>16*1024*1024)fail('Описание пака content.xml превышает 16 МБ.','xml-size');
+  if(archiveKey(f.name)==='content.xml'&&f.originalSize>xmlLimit)fail('Описание пака content.xml превышает 16 МБ.','xml-size');
   return true;
  }});}catch(err){if(err instanceof SIQImportError)throw err;fail('Не удалось распаковать файл: архив ZIP повреждён, зашифрован или имеет неподдерживаемое сжатие.','archive');}
  const names=new Map();for(const path of Object.keys(files)){const key=archiveKey(path);if(!names.has(key))names.set(key,[]);names.get(key).push(path);}
@@ -78,6 +102,16 @@ export function importSIQ(bytes,decisions={}){
   r.themes=(themes.length?themes:[null]).map(te=>{const qs=children(child(te,'questions'),'question');return {id:uid(),name:te?.getAttribute('name')||'Новая тема',questions:r.type==='final'?[emptyQuestion(qs[0],true)]:(qs.length?qs:[null]).map(qe=>emptyQuestion(qe,false))};});
  }
  const attempt=(location,fn)=>{try{return fn();}catch(err){report(location,err.message);return null;}};
+ function readInfo(owner,location,label){
+  const element=child(owner,'info');if(!element)return;
+  const info={},seen=new Set();
+  for(const el of element.children){
+   const key=el.localName,list={authors:'author',sources:'source'}[key];
+   if(seen.has(key)||!['authors','sources','comments','showmanComments','extension'].includes(key)||el.attributes.length||Array.from(el.children).some(c=>!list||c.localName!==list||c.children.length||c.attributes.length))report(location,`Неподдерживаемые сведения ${label}. Нельзя открыть пак без потери данных.`,'unsupported-info');
+   seen.add(key);info[key]=list?children(el,list).map(txt):txt(el);
+  }
+  return info;
+ }
  function readItem(el,legacy=false){
   const rawType=el.getAttribute('type')||'text';if(legacy&&rawType==='marker')return step('answer');
   const type=rawType==='voice'?'audio':['say','oral'].includes(rawType)?'text':rawType;
@@ -110,9 +144,12 @@ export function importSIQ(bytes,decisions={}){
   target={kind:'round',key:`r:${ri}`,round:ri};
   if(decisions.clearRounds?.has(target.key)){clearRound(re,r);p.rounds.push(r);continue;}
   const roundProblemStart=problems.length;
+  const roundInfo=readInfo(re,rl,'раунда');if(roundInfo)r.info=roundInfo;
   if(!['standard','final'].includes(r.type))report(rl,`Тип раунда «${r.type}» не поддерживается.`,'round-type');
   for(const [ti,te]of children(child(re,'themes'),'theme').entries()){
    const t={id:uid(),name:te.getAttribute('name')||'Тема',questions:[]},tl=`${rl} → тема ${ti+1} «${t.name}»`;
+   target={kind:'round',key:`r:${ri}`,round:ri};
+   const themeInfo=readInfo(te,tl,'темы');if(themeInfo)t.info=themeInfo;
    for(const [qi,qe]of children(child(te,'questions'),'question').entries()){
     const location=`${tl} → вопрос ${qi+1} (${qe.getAttribute('price')||0})`,legacyType=child(qe,'type'),qt=qe.getAttribute('type')||legacyType?.getAttribute('name')||'simple';
     target={kind:'question',key:`r:${ri}/t:${ti}/q:${qi}`,round:ri,theme:ti,question:qi};
@@ -123,8 +160,8 @@ export function importSIQ(bytes,decisions={}){
     if(!type)report(location,`Тип вопроса «${qt}» (SIQ ${version}) пока не поддерживается. Доступны обычные вопросы, аукционы, скрытые ставки всех игроков SIQ 5, вопросы «Без риска» SIQ 5 и коты SIQ 5 «secret» и «secretPublicPrice».`,'question-type',{canRepair});
     if(child(qe,'script'))report(location,'Собственный сценарий <script> нельзя перенести без потери игровой логики.','script');
     for(const param of children(legacyType,'param'))report(location,`Старый параметр типа «${param.getAttribute('name')||'без имени'}» со значением «${txt(param)}» пока не поддерживается.`,'legacy-param');
-    const questionInfo=child(qe,'info'),answers=children(child(qe,'right'),'answer').map(txt);
-    const q={id:uid(),type,price:Number(qe.getAttribute('price'))||0,answer:answers[0]||'',alternatives:answers.slice(1).join('\n'),wrong:children(child(qe,'wrong'),'answer').map(txt).join('\n'),comment:txt(child(questionInfo,'showmanComments'))||txt(child(questionInfo,'comments')),source:children(child(questionInfo,'sources'),'source').map(txt).join('\n'),steps:[]};
+    const questionInfo=readInfo(qe,location,'вопроса'),answers=children(child(qe,'right'),'answer').map(txt);
+    const q={id:uid(),type,price:Number(qe.getAttribute('price'))||0,answer:answers[0]||'',alternatives:answers.slice(1).join('\n'),wrong:children(child(qe,'wrong'),'answer').map(txt).join('\n'),comment:questionInfo?.showmanComments??questionInfo?.comments??'',source:(questionInfo?.sources||[]).join('\n'),...(questionInfo?{info:questionInfo}:{}),steps:[]};
     const params=children(child(qe,'params'),'param'),seen=new Set();
     for(const param of params){const name=param.getAttribute('name');if(seen.has(name))report(location,`Параметр «${name}» задан несколько раз.`,'duplicate-param');seen.add(name);if(!['question','answer','answerDuration',...(type==='bagcat'?['theme','price','selectionMode']:[])].includes(name))report(location,`Параметр вопроса «${name||'без имени'}» (тип «${param.getAttribute('type')||'simple'}») пока не поддерживается.`,'question-param');}
     if(type==='bagcat'){q.cat=attempt(location,()=>readCatParams(params));if(q.cat&&qt==='secretPublicPrice')q.cat.showBeforeTransfer=true;}
@@ -156,6 +193,7 @@ export function importSIQ(bytes,decisions={}){
   p.rounds.push(r);
  }
  target=null;
+ const orderError=roundOrderError(p.rounds);if(orderError)report('Пак',orderError,'round-order');
  if(!p.rounds.length)report('Пак','В паке нет раундов.','empty-package');
  if(problems.length)throw new SIQImportError(problems);
  if(files['SIStudio-captions.json']?.length<16*1024*1024){try{const data=JSON.parse(strFromU8(files['SIStudio-captions.json'])),qs=p.rounds.flatMap(r=>r.themes.flatMap(t=>t.questions));if(data.version===1&&Array.isArray(data.captions)&&data.captions.length===qs.length)qs.forEach((q,i)=>restoreCaptions(q,data.captions[i]));}catch{ /* Optional caption hints cannot override XML content. */ }}

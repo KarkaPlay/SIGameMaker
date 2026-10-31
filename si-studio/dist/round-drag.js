@@ -1,7 +1,8 @@
+import {roundOrderError} from './model.js';
 import {reorderSteps} from './step-drag.js';
 
 // Keep complete round objects, including all question/media IDs and price settings.
-export const reorderRounds=reorderSteps;
+export function reorderRounds(rounds,id,beforeId){const next=reorderSteps(rounds,id,beforeId);return roundOrderError(next)?rounds:next;}
 
 // Choose among stable slots, independent of the animated preview's current layout.
 export function roundDropIndex(widths,from,center,gap=8){

@@ -25,9 +25,9 @@ test('reordered rounds survive draft cloning, undo/redo snapshots and SIQ round-
 
 test('rounds move as complete objects without changing questions, media, prices or input',()=>{
  const a={id:'a',type:'standard',priceMultiplier:3,themes:[{questions:[{id:'q',price:300,steps:[{mediaId:'photo'}]}]}]},b={id:'b'},final={id:'f',type:'final'},rounds=[a,b,final];
- const before=structuredClone(rounds),next=reorderRounds(rounds,'a',null);
- assert.deepEqual(next,[b,final,a]);assert.equal(next[2],a);assert.deepEqual(rounds,before);
- assert.deepEqual(reorderRounds(rounds,'f','a'),[final,a,b]);
+ const before=structuredClone(rounds),next=reorderRounds(rounds,'a','f');
+ assert.deepEqual(next,[b,a,final]);assert.equal(next[1],a);assert.deepEqual(rounds,before);
+ assert.equal(reorderRounds(rounds,'f','a'),rounds);assert.equal(reorderRounds(rounds,'a',null),rounds);
  for(const [id,target] of [['a','b'],['f',null],['b','b'],['unknown','a'],['a','missing']])assert.equal(reorderRounds(rounds,id,target),rounds);
 });
 test('stable insertion slots handle mixed widths, both directions, and outlying coordinates',()=>{

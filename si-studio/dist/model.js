@@ -37,6 +37,8 @@ export function finalRoundError(r){
 export const step=(type='text',value='')=>({id:uid(),type:type==='replic'?'text':type,value,duration:0,wait:true,...(type==='replic'?{placement:'replic'}:{})});
 export const question=(price=100,text='',answer='')=>({id:uid(),type:'simple',price,answer,alternatives:'',wrong:'',comment:'',source:'',steps:[step('text',text),step('answer')]});
 export const theme=(name='Новая тема',base=100)=>({id:uid(),name,questions:Array.from({length:5},(_,i)=>question((i+1)*base))});
+export function roundOrderError(rounds){const finals=rounds.filter(r=>r.type==='final');return finals.length>1?'Оставьте один финальный раунд':finals.length&&rounds.at(-1)!==finals[0]?'Финал должен быть последним раундом':'';}
+export function usedMediaIds(packs){return new Set(packs.filter(Boolean).flatMap(p=>questions(p).flatMap(q=>[...q.steps,...(q.customRevealSteps||[])].map(s=>s.mediaId).filter(Boolean))));}
 export const questions=p=>p.rounds.flatMap(r=>r.themes.flatMap(t=>t.questions));
 export function initial(demo=true){const p={id:uid(),name:demo?'Хороший вечер':'Новый пак',author:'',description:'',difficulty:5,language:'ru-RU',rounds:[{id:uid(),name:'Первый раунд',type:'standard',themes:[]}]};if(!demo){p.rounds[0].themes=[theme()];return p;}const samples=[['Вокруг света',[
 ['В какой стране находится город Киото, который больше тысячи лет был столицей государства?','Япония'],['Какой океан самый большой на Земле?','Тихий океан'],['Как называется столица Исландии?','Рейкьявик'],['В какой стране находится древний город Петра?','Иордания'],['Какой пролив разделяет Европу и Африку?','Гибралтарский пролив']]],
@@ -67,7 +69,7 @@ export function questionReadiness(q,r,media=new Map()){
   check('events','Все события заполнены, файлы загружены',eventErrors),
   check('reveal','Настроено раскрытие ответа',customRevealError(q)?[{message:customRevealError(q),detail:customRevealError(q)}]:[]),
   check('type','Выбран подходящий тип вопроса',typeErrors),
-  ...(r.type==='final'?[]:[check('price','Стоимость — целое неотрицательное число',Number.isInteger(q.price)&&q.price>=0?[]:[{message:'некорректная стоимость',detail:'Укажите целую стоимость от 0'}])])
+  ...(r.type==='final'?[]:[check('price','Стоимость — целое неотрицательное число',validQuestionPrice(q.price)?[]:[{message:'некорректная стоимость',detail:'Укажите целую стоимость от 0 до 2147483647'}])])
  ];
 }
 export function questionChecklist(q,r,media=new Map()){
@@ -75,6 +77,7 @@ export function questionChecklist(q,r,media=new Map()){
 }
 export function issues(p,media=new Map()){
  const errors=[];
+ const orderError=roundOrderError(p.rounds);if(orderError)errors.push({message:orderError});
  if(!p.name.trim())errors.push({message:'Укажите название пака'});
  if(!p.rounds.length)errors.push({message:'Добавьте раунд'});
  for(const r of p.rounds){

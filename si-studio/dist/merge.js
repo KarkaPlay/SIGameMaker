@@ -55,7 +55,7 @@ export function createMerger({root,onHome,toast}){
   document.body.append(box);box.showModal();panelMotion.open(box);
  }
  const saveStatus=()=>{const el=root.querySelector('#merge-save-status');if(el)el.textContent=loadingSide!==null?'Читаем '+(loadingSide===0?'первый':'второй')+' пак…':!state.stage&&!pending&&!dirty&&!unsaved?'Исходные паки остаются без изменений':unsaved?'Не сохранено · скачайте .siq':pending||dirty?'Сохраняем сборку…':'Сборка сохранена на устройстве';};
- const persistState=()=>{const value=structuredClone(state);pending++;saveStatus();saveQueue=saveQueue.catch(()=>{}).then(()=>saveMergeDraft(value)).then(()=>{unsaved=false;},()=>{unsaved=true;toast('Сборка не сохранена. Скачайте .siq перед закрытием.');}).finally(()=>{pending--;saveStatus();});};
+ const persistState=()=>{state.media=mergeMedia(state.pack,state.media,[...history,...future].map(entry=>entry.pack));const value=structuredClone(state);pending++;saveStatus();saveQueue=saveQueue.catch(()=>{}).then(()=>saveMergeDraft(value)).then(()=>{unsaved=false;},()=>{unsaved=true;toast('Сборка не сохранена. Скачайте .siq перед закрытием.');}).finally(()=>{pending--;saveStatus();});};
  const save=()=>{dirty=true;clearTimeout(saveTimer);saveStatus();saveTimer=setTimeout(()=>{dirty=false;persistState();},300);};
  const flushSave=()=>{clearTimeout(saveTimer);if(dirty){dirty=false;persistState();}return saveQueue;};
  const record=()=>{history.push({pack:structuredClone(state.pack),active});if(history.length>30)history.shift();future=[];};
